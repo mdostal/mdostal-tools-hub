@@ -33,7 +33,7 @@ export const TOOLS: ToolEntry[] = [
     description: "Pick your allergens, see where in the US is best or worst for you.",
     originUrl: "https://allergy-locator.vercel.app",
     repoUrl: "https://github.com/mdostal/allergy-locator",
-    live: false,
+    live: true,
   },
   {
     mount: "mapstack",
