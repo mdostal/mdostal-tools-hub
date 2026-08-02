@@ -41,6 +41,6 @@ export const TOOLS: ToolEntry[] = [
     description: "Open-source US map layers -- pick datasets, overlay them, find what matters to you.",
     originUrl: "https://mapstack-us.vercel.app",
     repoUrl: "https://github.com/mdostal/mapstack-us",
-    live: false,
+    live: true,
   },
 ];
