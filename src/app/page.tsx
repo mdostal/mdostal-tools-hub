@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { TOOLS } from "@/lib/tools";
 
 export default function Home() {
@@ -32,27 +33,35 @@ export default function Home() {
           {TOOLS.map((tool) => (
             <div
               key={tool.mount}
-              className="group flex flex-col justify-between gap-6 rounded-xl border border-border bg-surface p-6 transition-colors hover:border-accent/50"
+              className="group flex flex-col justify-between gap-6 overflow-hidden rounded-xl border border-border bg-surface transition-colors hover:border-accent/50"
             >
               <div>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent/10 font-mono text-sm font-semibold text-accent">
-                    {tool.label.slice(0, 1)}
-                  </span>
+                <div className="relative aspect-video w-full overflow-hidden border-b border-border bg-background">
+                  <Image
+                    src={tool.screenshot}
+                    alt={`Real ${tool.label} map output`}
+                    fill
+                    sizes="(min-width: 640px) 50vw, 100vw"
+                    className="object-cover object-center transition-transform duration-300 group-hover:scale-[1.03]"
+                  />
                   {tool.live ? (
-                    <span className="flex items-center gap-1.5 text-xs font-medium text-muted">
+                    <span className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-black/70 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
                       <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
                       Live
                     </span>
                   ) : (
-                    <span className="text-xs font-medium text-muted">Preview only</span>
+                    <span className="absolute right-3 top-3 rounded-full bg-black/70 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                      Preview only
+                    </span>
                   )}
                 </div>
-                <h2 className="mt-4 text-lg font-semibold text-foreground">{tool.label}</h2>
-                <p className="mt-1.5 text-sm text-muted">{tool.description}</p>
+                <div className="px-6 pt-5">
+                  <h2 className="text-lg font-semibold text-foreground">{tool.label}</h2>
+                  <p className="mt-1.5 text-sm text-muted">{tool.description}</p>
+                </div>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 px-6 pb-6">
                 {tool.live ? (
                   <a
                     href={`/${tool.mount}`}

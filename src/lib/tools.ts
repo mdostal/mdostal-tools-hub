@@ -24,6 +24,10 @@ export interface ToolEntry {
    * shows a "coming soon" state for anything still false, rather than
    * linking to a route that 404s. */
   live: boolean;
+  /** Path under /public to a real screenshot of the tool's own map output
+   * (captured from the live deployment, not a mockup) -- shown as the
+   * card's preview thumbnail. */
+  screenshot: string;
 }
 
 export const TOOLS: ToolEntry[] = [
@@ -34,6 +38,7 @@ export const TOOLS: ToolEntry[] = [
     originUrl: "https://allergy-locator.vercel.app",
     repoUrl: "https://github.com/mdostal/allergy-locator",
     live: true,
+    screenshot: "/screenshots/allergy-locator.png",
   },
   {
     mount: "mapstack",
@@ -42,5 +47,6 @@ export const TOOLS: ToolEntry[] = [
     originUrl: "https://mapstack-us.vercel.app",
     repoUrl: "https://github.com/mdostal/mapstack-us",
     live: true,
+    screenshot: "/screenshots/mapstack.png",
   },
 ];
