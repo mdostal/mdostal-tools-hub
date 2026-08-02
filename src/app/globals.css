@@ -1,21 +1,44 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
-
+/*
+ * Real brand tokens, verified live from mdostal.com's own shipped CSS
+ * (not invented) -- see DESIGN-BRIEF.md. Dark-first: this page's primary
+ * surface matches mdostal.com/life.mdostal.com's own dark-by-default
+ * presentation rather than defaulting light and overriding for dark.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #050505;
+  --surface: #0f0f0f;
+  --border: #27272a;
+  --foreground: #f4f4f5;
+  --muted: #9ca3af;
+  --accent: #ff6b00;
+  --accent-dark: #c05000;
 }
 
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: light) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #fafafa;
+    --surface: #ffffff;
+    --border: #e4e4e7;
+    --foreground: #18181b;
+    --muted: #52525b;
   }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-dark: var(--accent-dark);
+  --font-sans: var(--font-inter);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
