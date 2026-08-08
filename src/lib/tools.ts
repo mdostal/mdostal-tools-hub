@@ -49,4 +49,14 @@ export const TOOLS: ToolEntry[] = [
     live: true,
     screenshot: "/screenshots/mapstack.png",
   },
+  {
+    mount: "framework",
+    label: "Drone Components",
+    description:
+      "A shadcn-style component framework for drone property intelligence -- map layer viewer, 3D/point-cloud viewer, geo-anchored model overlay, video walkthrough player, Minecraft terrain voxelizer + exporter.",
+    originUrl: "https://drone-hub-rust.vercel.app",
+    repoUrl: "https://github.com/mdostal/drone-hub",
+    live: true,
+    screenshot: "/screenshots/drone-hub.png",
+  },
 ];
