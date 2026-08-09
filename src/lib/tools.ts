@@ -50,6 +50,16 @@ export const TOOLS: ToolEntry[] = [
     screenshot: "/screenshots/mapstack.png",
   },
   {
+    mount: "study-tracker",
+    label: "Medical Study Tracker",
+    description:
+      "Ranks paid clinical-trial studies by net cash kept, cash velocity, and downtime -- not the headline \"up to $\" figure. Community-verified data, no accounts.",
+    originUrl: "https://medical-study-tracker-seven.vercel.app",
+    repoUrl: "https://github.com/mdostal/medical-study-tracker",
+    live: true,
+    screenshot: "/screenshots/study-tracker.png",
+  },
+  {
     mount: "framework",
     label: "Drone Components",
     description:
