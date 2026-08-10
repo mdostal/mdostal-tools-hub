@@ -28,6 +28,14 @@ export interface ToolEntry {
    * (captured from the live deployment, not a mockup) -- shown as the
    * card's preview thumbnail. */
   screenshot: string;
+  /** For a multi-component framework (not a single-purpose tool): the real
+   * component/tool list, each linking directly through this hub's
+   * multi-zone rewrite to that component's own live demo on the origin
+   * app. Presence of this field (vs. omitted) is what makes a card render
+   * as the wider "featured framework" layout instead of the standard
+   * single-purpose tool card -- see src/app/page.tsx. Omitted for every
+   * single-purpose tool. */
+  components?: { label: string; href: string }[];
 }
 
 export const TOOLS: ToolEntry[] = [
@@ -63,10 +71,28 @@ export const TOOLS: ToolEntry[] = [
     mount: "framework",
     label: "Drone Components",
     description:
-      "A shadcn-style component framework for drone property intelligence -- map layer viewer, 3D/point-cloud viewer, geo-anchored model overlay, video walkthrough player, Minecraft terrain voxelizer + exporter.",
+      "A shadcn-style component framework for drone property intelligence -- map layer viewer, 3D/point-cloud viewer, geo-anchored model overlay, video walkthrough player, Minecraft terrain voxelizer, and the tools around them. Demoed against real drone photogrammetry, not mockups.",
     originUrl: "https://drone-hub-rust.vercel.app",
     repoUrl: "https://github.com/mdostal/drone-hub",
     live: true,
     screenshot: "/screenshots/drone-hub.png",
+    // Mirrors drone-hub's own root ToC (app/page.tsx there) exactly -- kept
+    // in sync by hand, same "small, low-churn hand-mirrored list" precedent
+    // drone-hub's own NavStrip uses for the same reason (see that file's
+    // header comment). MinecraftExport omitted here (no demo page of its
+    // own -- same href as VoxelTerrain, would just duplicate a chip).
+    components: [
+      { label: "VideoTour", href: "/framework/components/video-tour" },
+      { label: "LayerViewer", href: "/framework/components/layer-viewer" },
+      { label: "Model3D", href: "/framework/components/model3d" },
+      { label: "LandOverlay", href: "/framework/components/land-overlay" },
+      { label: "VoxelTerrain", href: "/framework/components/voxel-terrain" },
+      { label: "ContentEngine", href: "/framework/properties/2806-prado/engine" },
+      { label: "FileUpload", href: "/framework/components/file-upload" },
+      { label: "FileList", href: "/framework/components/file-list" },
+      { label: "ProcessingStatus", href: "/framework/components/processing-status" },
+      { label: "FlightCoverageAnalyzer", href: "/framework/components/flight-coverage-analyzer" },
+      { label: "TourBuilder", href: "/framework/components/tour-builder" },
+    ],
   },
 ];
