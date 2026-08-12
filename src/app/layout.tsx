@@ -7,13 +7,43 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-const FAVICON =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23050505'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='58' font-weight='700' fill='%23ff6b00' text-anchor='middle'%3Et%3C/text%3E%3C/svg%3E";
+// Absolute URLs throughout, not metadataBase + relative paths -- same
+// explicit-absolute-URL approach used by every child tool's own metadata
+// (e.g. medical-study-tracker's app/layout.tsx), so there's no ambiguity
+// about how a relative path would resolve.
+const SITE_URL = "https://tools.mdostal.com";
+const TITLE = "Tools — mdostal.com";
+const DESCRIPTION = "Open-source tools, built and shipped in public. Live at tools.mdostal.com.";
 
+// favicon.ico + apple-icon.png live in this directory (Next's automatic
+// file-based icon convention) -- both rendered from the same brand mark
+// the old inline data-URI SVG favicon drew, just as a real file now
+// instead of a data URI (which some crawlers/OS icon caches don't handle
+// well, and which had no apple-touch-icon equivalent at all).
 export const metadata: Metadata = {
-  title: "Tools — mdostal.com",
-  description: "Open-source tools, built and shipped in public. Live at tools.mdostal.com.",
-  icons: { icon: FAVICON },
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: SITE_URL,
+    siteName: "mdostal tools",
+    type: "website",
+    images: [
+      {
+        url: `${SITE_URL}/og-image.png`,
+        width: 1440,
+        height: 1024,
+        alt: "tools.mdostal.com — a directory of open-source tools, each with a real live demo and screenshot",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: [`${SITE_URL}/og-image.png`],
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
