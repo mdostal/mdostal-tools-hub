@@ -1,9 +1,20 @@
 /**
- * Single source of truth for every tool this hub exposes under
- * tools.mdostal.com. Each entry drives BOTH the landing-page directory
- * listing (src/app/page.tsx) AND the multi-zone rewrites (next.config.ts)
- * that proxy a mount path here to that tool's own independently-deployed
- * Vercel project -- add a tool here once, not in two places.
+ * The real source of truth for every tool this hub exposes under
+ * tools.mdostal.com is now the "tool" document type in the personal-site
+ * Sanity project (mdostal/personal-site's sanity/schemas/tool.ts) --
+ * getTools() below fetches it. Adding a new tool is a Studio publish, not a
+ * code change: fill in label/mount/description/originUrl/repoUrl/screenshot
+ * (+ optional pagesUrl/components), hit publish, and the next build/request
+ * picks it up automatically in both the landing-page cards AND the
+ * multi-zone routing rewrite (next.config.ts, which also calls getTools()).
+ *
+ * FALLBACK_TOOLS below is the safety net, not a second source of truth to
+ * keep in sync by hand -- getTools() only falls back to it when Sanity isn't
+ * configured (e.g. local dev with no env vars) or a fetch genuinely fails,
+ * so the site can never go fully dark over a CMS hiccup. It's snapshotted
+ * from what was live before this migration; it doesn't need updating when a
+ * NEW tool is added in Sanity, only if you want that new tool to survive a
+ * total Sanity outage too.
  *
  * `originUrl` is the tool's own Vercel deployment, which MUST be built
  * with a matching `basePath` (e.g. mount "/allergy-locator" <-> the child
@@ -12,6 +23,14 @@
  * everywhere (its own domain included), so its internal asset/link paths
  * already match what this hub's rewrite forwards.
  */
+// Relative import, not the "@/lib/sanity" alias -- next.config.ts's own
+// lightweight config-transpile step (it imports getTools from this file)
+// doesn't reliably resolve tsconfig path aliases for a SECOND-level import
+// like this one, even though the top-level "@/lib/tools" import from
+// next.config.ts itself works fine. Confirmed by a real build failure
+// ("Cannot find module './src/lib/sanity'") with the aliased form.
+import { allToolsQuery, sanityClient, sanityConfigured, sanityImageUrl, type SanityToolDoc } from "./sanity";
+
 export interface ToolEntry {
   /** URL path segment under tools.mdostal.com, no leading/trailing slash. */
   mount: string;
@@ -45,7 +64,7 @@ export interface ToolEntry {
   components?: { label: string; href: string }[];
 }
 
-export const TOOLS: ToolEntry[] = [
+const FALLBACK_TOOLS: ToolEntry[] = [
   {
     mount: "allergy-locator",
     label: "Allergy Locator",
@@ -104,3 +123,41 @@ export const TOOLS: ToolEntry[] = [
     ],
   },
 ];
+
+function fromSanityDoc(doc: SanityToolDoc): ToolEntry {
+  return {
+    mount: doc.mount,
+    label: doc.label,
+    description: doc.description,
+    originUrl: doc.originUrl,
+    repoUrl: doc.repoUrl,
+    pagesUrl: doc.pagesUrl || undefined,
+    live: Boolean(doc.live),
+    // 1200px is comfortably wider than any card's rendered width (see
+    // sizes= on the <Image> in src/app/page.tsx) at 2x DPI.
+    screenshot: doc.screenshot ? sanityImageUrl(doc.screenshot, 1200) : "",
+    components: doc.components && doc.components.length > 0 ? doc.components : undefined,
+  };
+}
+
+/**
+ * Called from BOTH src/app/page.tsx (the landing-page cards) and
+ * next.config.ts (the multi-zone rewrites) -- same data, same fallback
+ * behavior, one function. Never throws: any failure (Sanity unconfigured,
+ * network error, empty result set) resolves to FALLBACK_TOOLS instead, so
+ * neither call site needs its own try/catch.
+ */
+export async function getTools(): Promise<ToolEntry[]> {
+  if (!sanityConfigured || !sanityClient) return FALLBACK_TOOLS;
+  try {
+    const docs = await sanityClient.fetch<SanityToolDoc[]>(
+      allToolsQuery,
+      {},
+      { next: { revalidate: 300 } },
+    );
+    if (!docs || docs.length === 0) return FALLBACK_TOOLS;
+    return docs.map(fromSanityDoc);
+  } catch {
+    return FALLBACK_TOOLS;
+  }
+}

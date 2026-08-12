@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { TOOLS } from "@/lib/tools";
+import { getTools } from "@/lib/tools";
 import type { ToolEntry } from "@/lib/tools";
 
 function LiveBadge({ live }: { live: boolean }) {
@@ -136,7 +136,8 @@ function FrameworkCard({ tool }: { tool: ToolEntry & { components: NonNullable<T
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  const TOOLS = await getTools();
   return (
     <main className="min-h-full">
       <header className="mx-auto flex w-full max-w-4xl items-center justify-between px-6 py-8">
