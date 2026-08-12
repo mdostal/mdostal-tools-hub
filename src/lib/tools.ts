@@ -19,6 +19,13 @@ export interface ToolEntry {
   description: string;
   originUrl: string;
   repoUrl: string;
+  /** The tool's own GitHub Pages project site (e.g.
+   * https://mdostal.github.io/medical-study-tracker/) -- a standalone
+   * landing page with a real screenshot + description, separate from both
+   * the live app (originUrl) and the raw repo (repoUrl). Omitted for any
+   * tool that doesn't have one yet; OpenAndSourceLinks (src/app/page.tsx)
+   * only renders the "Site Page" link when this is set. */
+  pagesUrl?: string;
   /** Set to true once the origin app has actually shipped basePath support
    * and the rewrite is verified working end-to-end -- the landing page
    * shows a "coming soon" state for anything still false, rather than
@@ -64,6 +71,7 @@ export const TOOLS: ToolEntry[] = [
       "Ranks paid clinical-trial studies by net cash kept, cash velocity, and downtime -- not the headline \"up to $\" figure. Community-verified data, no accounts.",
     originUrl: "https://medical-study-tracker-seven.vercel.app",
     repoUrl: "https://github.com/mdostal/medical-study-tracker",
+    pagesUrl: "https://mdostal.github.io/medical-study-tracker/",
     live: true,
     screenshot: "/screenshots/study-tracker.png",
   },

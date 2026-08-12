@@ -15,9 +15,14 @@ function LiveBadge({ live }: { live: boolean }) {
   );
 }
 
+/** Every tool gets up to three links, in this order: the running app (or,
+ *  if nothing is actually deployed anywhere, a fallback to the newest
+ *  GitHub release so there's still SOMETHING to grab); the tool's own
+ *  GitHub Pages site, if it has one (tool.pagesUrl); and the source repo,
+ *  always. */
 function OpenAndSourceLinks({ tool }: { tool: ToolEntry }) {
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex flex-wrap items-center gap-4">
       {tool.live ? (
         <a
           href={`/${tool.mount}`}
@@ -27,13 +32,23 @@ function OpenAndSourceLinks({ tool }: { tool: ToolEntry }) {
         </a>
       ) : (
         <a
-          href={tool.originUrl}
+          href={`${tool.repoUrl}/releases/latest`}
           target="_blank"
           rel="noreferrer"
           className="inline-flex h-10 items-center justify-center rounded-lg border border-border px-4 text-sm font-semibold text-foreground transition-colors hover:border-accent/50"
-          title="Not yet mounted at this domain -- opens the standalone deployment instead"
+          title="Not deployed anywhere right now -- grab the newest GitHub release instead"
         >
-          Preview ↗
+          Download latest release ↓
+        </a>
+      )}
+      {tool.pagesUrl && (
+        <a
+          href={tool.pagesUrl}
+          className="text-sm text-muted hover:text-foreground"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Site page
         </a>
       )}
       <a href={tool.repoUrl} className="text-sm text-muted hover:text-foreground" target="_blank" rel="noreferrer">
