@@ -1,0 +1,47 @@
+name: web-team
+description: >
+  Single team for mdostal-tools-hub -- a small Next.js router/landing page with
+  no backend service directory (Sanity is an external CMS, not code in this repo).
+tech_stack:
+  languages: [typescript]
+  frameworks: [next.js, react, tailwindcss]
+methodology: bdd  # from hive.config.yaml execution.default_methodology
+
+domains:
+  - name: app
+    paths: [src/app/]
+    agents: [frontend-developer, ui-designer]
+  - name: data-layer
+    paths: [src/lib/]
+    agents: [frontend-developer]
+  - name: tooling
+    paths: [scripts/]
+    agents: [backend-developer]
+
+agents:
+  frontend-developer:
+    domain_restrictions: [src/app/, src/lib/]
+    context:
+      lint_commands: ["pnpm lint"]
+      commit_granularity: fine  # from hive.config.yaml developer.commit_granularity
+  reviewer:
+    context:
+      pr_style: single-commit       # from hive.config.yaml developer.pr_style
+      review_depth: thorough        # from hive.config.yaml developer.review_depth
+  tester:
+    note: >
+      No test infrastructure exists yet (test_absence: true). No tool_access
+      grants -- Maestro/Playwright/etc. were not detected during integration
+      preflight.
+  ui-designer:
+    context:
+      brand_source: DESIGN-BRIEF.md
+
+integrations:
+  # From project-profile.yaml -> integrations. Only granting what's detected.
+  codex:
+    detected: true
+    granted_to: [reviewer]
+  posthog:
+    detected: true
+    granted_to: [analyst]

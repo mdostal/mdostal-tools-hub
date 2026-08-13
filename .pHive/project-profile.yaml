@@ -1,0 +1,207 @@
+project_name: "mdostal-tools-hub"
+type: brownfield
+discovered: "2026-08-13T00:20:34Z"
+source: "codebase scan (no CLAUDE.md present)"
+
+project_type: consumer-app
+has_ui: true
+
+ship_target:
+  kind: vercel
+  notes: "Deploys as tools.mdostal.com. Uses Vercel's multi-zone pattern -- this repo is the router/landing page; each tool is its own independently-deployed Vercel project proxied in via next.config.ts rewrites."
+
+claude_md_summary: |
+  No CLAUDE.md exists in this repo. Conventions below are inferred entirely
+  from README.md, DESIGN-BRIEF.md, and codebase scan.
+
+  Build/test/lint commands (from package.json, pnpm-based):
+    - pnpm dev    -- next dev
+    - pnpm build  -- next build
+    - pnpm start  -- next start
+    - pnpm lint   -- eslint
+  No test command exists -- there are no test files in this repo.
+
+  Core convention (from README.md "How a tool gets added"): a new tool ships
+  as its own repo + Vercel project with its own next.config.ts basePath. This
+  hub only needs one entry added via the Sanity Studio "tool" document type
+  (no code change) -- src/lib/tools.ts's getTools() fetches from Sanity at
+  build time and drives both the landing-page cards and the multi-zone
+  rewrites in next.config.ts from the same data.
+
+tech_stack:
+  languages: [typescript]
+  frameworks: [next.js, react, tailwindcss]
+  build_tools: [pnpm, eslint]
+  package_managers: [pnpm]
+  versions:
+    next: "16.2.12"
+    react: "19.2.4"
+    typescript: "^5"
+    tailwindcss: "^4"
+    node: "22 (per .github/workflows/ci.yml)"
+
+structure:
+  modules:
+    - name: app
+      purpose: Next.js App Router entry -- landing page, layout, icons
+      source: src/app/
+    - name: lib
+      purpose: Sanity client + tool-list data layer, shared by the landing page and next.config.ts's rewrite generator
+      source: src/lib/
+    - name: scripts
+      purpose: One-time/idempotent migration script to seed tool docs into Sanity
+      source: scripts/
+  entry_points:
+    - src/app/page.tsx (landing page)
+    - src/app/layout.tsx (root layout)
+    - next.config.ts (multi-zone rewrite config, also reads getTools())
+
+architecture:
+  pattern: Next.js App Router, server components by default
+  di_framework: none (small app, no DI container)
+  state_management: none -- fully server-rendered, no client-side state library
+  navigation: Next.js file-based routing + multi-zone rewrites (proxies /<mount>/* to each tool's own Vercel deployment)
+  data_layer: >
+    Single source of truth is the "tool" document type in a sibling Sanity
+    project (mdostal/personal-site). src/lib/sanity.ts holds a read-only
+    Sanity client (NEXT_PUBLIC_SANITY_PROJECT_ID / NEXT_PUBLIC_SANITY_DATASET
+    env vars, never a write token). src/lib/tools.ts's getTools() fetches the
+    tool list and falls back to a hardcoded FALLBACK_TOOLS snapshot if Sanity
+    is unconfigured or the fetch fails -- so the site can never go fully dark
+    over a CMS hiccup. Called from both src/app/page.tsx (cards) and
+    next.config.ts (rewrites) so both stay in sync automatically.
+
+conventions:
+  naming: "PascalCase components, camelCase functions/vars, kebab-case tool mount paths"
+  file_organization: "src/app for routes, src/lib for shared data/client logic; flat, no feature folders (small app)"
+  branching: "Everything committed directly to main -- no feature branches observed in history"
+  commit_messages: "Short, imperative, present-tense summary lines (e.g. 'Refresh drone-hub screenshot -- now 12 components/tools'); em-dash used for a trailing clarifying clause. No conventional-commits prefixes (feat:/fix:) used."
+
+test_infrastructure:
+  unit:
+    framework: none
+    location: n/a
+    count: "0 files"
+    coverage_tool: none
+  integration:
+    framework: none
+    location: n/a
+  e2e:
+    framework: none
+    location: n/a
+    count: "0 flows/specs"
+  mocking: none
+  test_commands: []
+
+ci_cd:
+  platform: GitHub Actions
+  workflows:
+    - path: .github/workflows/ci.yml
+      trigger: "push to main, pull_request"
+      steps: "pnpm install --frozen-lockfile, pnpm lint, pnpm build"
+  gating: "CI runs lint + build on every push/PR; no test step exists (no tests to run)"
+
+documentation_found:
+  - path: README.md
+    content_summary: "Explains the multi-zone router pattern and the 'add a tool via Sanity Studio publish' workflow"
+  - path: DESIGN-BRIEF.md
+    content_summary: "Hive /design-produced brand brief for the landing page redesign -- brand tokens shared with mdostal.com/life.mdostal.com, layout spec, WCAG AA notes"
+
+existing_knowledge:
+  mcp_servers: []
+  existing_skills: []
+  existing_hooks: []
+
+integrations:
+  cli_tools:
+    linearis: missing
+    frame0: missing
+    codex: detected
+    maestro: missing
+  mcp_servers:
+    firecrawl: missing
+    context7: missing
+    posthog: detected
+    firebase: missing
+    mobile-mcp: missing
+  vaults:
+    obsidian: missing
+
+code_quality:
+  linters:
+    - name: eslint
+      config_path: eslint.config.mjs
+      lint_command: "pnpm lint"
+      ecosystem: javascript
+  formatters: []
+  pre_commit:
+    framework: null
+    hooks: []
+  code_snippets:
+    - path: src/lib/tools.ts
+      pattern: cms-with-fallback-data-layer
+      annotation: "getTools() fetches from Sanity, falls back to a hardcoded FALLBACK_TOOLS snapshot on any failure -- shared by both the landing page and next.config.ts's rewrite generator so they never drift."
+      lines: "150-163"
+    - path: next.config.ts
+      pattern: multi-zone-rewrite-generator
+      annotation: "async rewrites() derives Vercel multi-zone proxy rules directly from getTools(), so publishing a tool in Sanity with live:true is enough to wire up routing -- no code change."
+      lines: "25-31"
+    - path: src/app/page.tsx
+      pattern: react-server-component-landing-page
+      annotation: "Server component composed of small presentational helpers (LiveBadge, OpenAndSourceLinks) driven entirely by ToolEntry data, no client-side state."
+      lines: "1-40"
+  test_first_signals:
+    co_located_tests: false
+    test_before_source: inconclusive
+    test_runner_in_precommit: false
+    bdd_keywords: false
+    test_absence: true
+
+project_maturity: production
+
+north_star:
+  goal: >
+    Route tools.mdostal.com subpaths to independently-deployed personal tool
+    projects with a shared, low-maintenance landing page. Evolving beyond
+    manual Sanity entries into a GitHub auto-crawler: scan ALL public repos
+    under the mdostal account, pull README + repo metadata, and generate a
+    suggested Sanity "tool" entry (label/description/etc.) for human approval
+    rather than auto-publishing unreviewed. Longer-term, package the crawler
+    itself as a reusable, restylable tool other developers can point at their
+    own GitHub account to auto-generate their own portfolio site -- this repo
+    is both the live mdostal.com instance AND (eventually) the reference
+    implementation/template for that reusable tool.
+  audience: >
+    Primary: Mathew Dostal (repo owner) and visitors to tools.mdostal.com.
+    Secondary (future): other developers who adopt the crawler as a
+    reusable/restylable tool to auto-generate their own GitHub-driven
+    portfolio site.
+  expected_scale: "unknown"
+  pain_points: >
+    Onboarding a new tool is still partly manual (screenshot capture, writing
+    label/description by hand) even after the Sanity migration. Wants repo
+    discovery and overview generation automated -- see goal.
+  success: >
+    v1: every public mdostal repo is scanned automatically and surfaced as a
+    suggested entry for approval, not just the 4 tools currently listed by
+    hand. v2: the crawler mechanism is generalized/restylable so someone else
+    can retarget it at their own GitHub account and get their own
+    auto-updating portfolio site.
+  avoid: >
+    No fully-automatic unreviewed publishing to the live site -- crawler
+    output is a suggestion, human approves before it goes live (per explicit
+    choice). Security: this repo is PUBLIC on GitHub -- never commit secrets;
+    confirmed clean via kickoff audit (2026-08-13): no .env files tracked,
+    ever, in history; .gitignore covers .env*; the only write-capable
+    credential (SANITY_API_WRITE_TOKEN) is read from process.env, never
+    hardcoded. Keep it that way -- any new crawler code needs a GitHub token
+    for API rate limits, which must follow the same env-var-only pattern.
+
+github_crawler_scope:
+  # Captured 2026-08-13 during kickoff discovery -- feeds the future /plan
+  # epic for this feature, not implemented yet.
+  crawl_target: "All public repos under the mdostal GitHub account (v1). Later: any GitHub account/org, user-configurable, once generalized."
+  auto_add_mode: "suggest-then-approve -- crawler proposes a Sanity tool doc, human reviews/publishes. No fully-automatic publish."
+  runtime: "A script in this repo (same pattern as scripts/migrate-tools-to-sanity.mjs), run locally or on a schedule -- not a Sanity Studio plugin or GitHub Action, at least for v1."
+  overview_source: "GitHub repo README + metadata (description, topics, languages) parsed into label/description fields -- not LLM-summarized for v1."
+  reusability_direction: "Eventually restylable/config-driven so other developers can point the same crawler at their own GitHub account and get their own auto-updating portfolio -- this is a stated future direction, not yet scoped into stories."
