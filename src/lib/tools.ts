@@ -54,6 +54,12 @@ export interface ToolEntry {
    * (captured from the live deployment, not a mockup) -- shown as the
    * card's preview thumbnail. */
   screenshot: string;
+  /** Optional small brand mark (logo, not a screenshot) -- resolved CDN URL.
+   * Rendered as a badge over the screenshot's top-left corner and inline
+   * next to the tool's name (see page.tsx's ToolCard/FrameworkCard). Omitted
+   * entirely for tools without one yet; the card layout is unchanged in
+   * that case. */
+  icon?: string;
   /** For a multi-component framework (not a single-purpose tool): the real
    * component/tool list, each linking directly through this hub's
    * multi-zone rewrite to that component's own live demo on the origin
@@ -136,6 +142,10 @@ function fromSanityDoc(doc: SanityToolDoc): ToolEntry {
     // 1200px is comfortably wider than any card's rendered width (see
     // sizes= on the <Image> in src/app/page.tsx) at 2x DPI.
     screenshot: doc.screenshot ? sanityImageUrl(doc.screenshot, 1200) : "",
+    // 96px comfortably covers both render sizes (a ~36px badge and a ~20px
+    // inline mark) at 2x DPI, same "comfortably wider, not exact" approach
+    // as screenshot above.
+    icon: doc.icon ? sanityImageUrl(doc.icon, 96) : undefined,
     components: doc.components && doc.components.length > 0 ? doc.components : undefined,
   };
 }

@@ -2,6 +2,32 @@ import Image from "next/image";
 import { getTools } from "@/lib/tools";
 import type { ToolEntry } from "@/lib/tools";
 
+/** Badge over the screenshot's top-left corner (LiveBadge mirrors this on
+ *  the right) -- only rendered when the tool has an icon field set; cards
+ *  without one keep today's layout unchanged. */
+function IconBadge({ tool }: { tool: ToolEntry }) {
+  if (!tool.icon) return null;
+  return (
+    <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-black/70 backdrop-blur-sm">
+      <Image src={tool.icon} alt="" width={36} height={36} className="h-full w-full object-cover" />
+    </span>
+  );
+}
+
+/** Small inline mark next to the tool's name -- same gate as IconBadge. */
+function IconInline({ tool }: { tool: ToolEntry }) {
+  if (!tool.icon) return null;
+  return (
+    <Image
+      src={tool.icon}
+      alt=""
+      width={20}
+      height={20}
+      className="h-5 w-5 shrink-0 rounded-md object-cover"
+    />
+  );
+}
+
 function LiveBadge({ live }: { live: boolean }) {
   return live ? (
     <span className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-black/70 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
@@ -72,10 +98,14 @@ function ToolCard({ tool }: { tool: ToolEntry }) {
             sizes="(min-width: 640px) 50vw, 100vw"
             className="object-cover object-center transition-transform duration-300 group-hover:scale-[1.03]"
           />
+          <IconBadge tool={tool} />
           <LiveBadge live={tool.live} />
         </div>
         <div className="px-6 pt-5">
-          <h2 className="text-lg font-semibold text-foreground">{tool.label}</h2>
+          <div className="flex items-center gap-2">
+            <IconInline tool={tool} />
+            <h2 className="text-lg font-semibold text-foreground">{tool.label}</h2>
+          </div>
           <p className="mt-1.5 text-sm text-muted">{tool.description}</p>
         </div>
       </div>
@@ -105,6 +135,7 @@ function FrameworkCard({ tool }: { tool: ToolEntry & { components: NonNullable<T
           sizes="(min-width: 640px) 288px, 100vw"
           className="object-cover object-center transition-transform duration-300 group-hover:scale-[1.03]"
         />
+        <IconBadge tool={tool} />
         <LiveBadge live={tool.live} />
       </div>
 
@@ -113,7 +144,10 @@ function FrameworkCard({ tool }: { tool: ToolEntry & { components: NonNullable<T
           <span className="mb-1.5 inline-block text-xs font-semibold uppercase tracking-wide text-accent">
             Featured — component framework
           </span>
-          <h2 className="text-lg font-semibold text-foreground">{tool.label}</h2>
+          <div className="flex items-center gap-2">
+            <IconInline tool={tool} />
+            <h2 className="text-lg font-semibold text-foreground">{tool.label}</h2>
+          </div>
           <p className="mt-1.5 text-sm text-muted">{tool.description}</p>
 
           <ul className="mt-4 flex flex-wrap gap-2">
