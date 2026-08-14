@@ -20,6 +20,15 @@ completely independent of this one.
    the landing-page listing and the `next.config.ts` rewrites — nothing
    else needs to change.
 
+[`scripts/crawl-github-repos.mjs`](scripts/crawl-github-repos.mjs) automates
+step 1's discovery: run `node scripts/crawl-github-repos.mjs` for a dry-run
+summary of every public repo under the `mdostal` GitHub account, or add
+`--write` to actually create a hidden, unpublished Sanity suggestion doc for
+each real candidate (forks, archived repos, this repo, and already-listed
+tools are skipped automatically). Suggestions still need a human to fill in
+the gaps (screenshot, etc.) and flip `hidden`/`live` in Studio before they
+show up here — nothing it creates is ever live by itself.
+
 ## Why a separate repo at all
 
 `mdostal.com` itself is a real, existing production site (Sanity CMS, Cal.com

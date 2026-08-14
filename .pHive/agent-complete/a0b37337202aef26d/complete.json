@@ -1,0 +1,16 @@
+{
+  "agent_id": "a0b37337202aef26d",
+  "session_id": "d83286f5-f9c5-4abc-a9b0-5be47933671a",
+  "agent_type": "",
+  "cwd": "/Users/mdostal/Documents/work/personal/mdostal-tools-hub",
+  "agent_transcript_path": "/Users/mdostal/.claude/projects/-Users-mdostal-Documents-work-personal-mdostal-tools-hub/d83286f5-f9c5-4abc-a9b0-5be47933671a/subagents/agent-a0b37337202aef26d.jsonl",
+  "last_assistant_message": "Reading crawl-github-repos.mjs implementation",
+  "prompt_id": "7ee1c48f-7d2d-47f2-b6b6-2dab641b0e95",
+  "permission_mode": "bypassPermissions",
+  "effort": {
+    "level": "high"
+  },
+  "verdict": "failure",
+  "verdict_source": "missing_marker",
+  "written_at": "2026-08-14T18:48:28Z"
+}

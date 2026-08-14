@@ -19,10 +19,16 @@ each one's mount path to its own independently-deployed Vercel project.
 - **live vs. preview-only** — `live: true` means the tool's `basePath` support is
   verified working end-to-end and gets a real rewrite + "Open" button. `live: false`
   shows a "Preview only" badge and falls back to linking the GitHub releases page.
-- **GitHub crawler** (planned, not yet built — see `north_star.github_crawler_scope`
-  in `.pHive/project-profile.yaml`) — a future script that scans all public repos
+- **GitHub crawler** — `scripts/crawl-github-repos.mjs`, which scans all public repos
   under the `mdostal` GitHub account, pulls README + metadata, and proposes new
   Sanity tool entries for human approval (suggest-then-approve, never auto-publish).
+  Suggestions are written to a distinct `tool-suggestion-<mount>` `_id` namespace,
+  never `tool-<mount>` (the curated/real namespace), so a crawler run can never
+  collide with or overwrite a real published tool doc. Writes are create-only: if
+  `tool-suggestion-<mount>` already exists (e.g. from a prior run, possibly hand-edited
+  in Studio since), the script skips it rather than overwriting. Defaults to a
+  dry-run that only prints a summary table; `--write` is required to actually create
+  documents.
 
 ## Key paths
 
@@ -36,8 +42,16 @@ each one's mount path to its own independently-deployed Vercel project.
   build time.
 - `src/app/page.tsx` — the landing page: tool grid, `LiveBadge`, `OpenAndSourceLinks`.
 - `scripts/migrate-tools-to-sanity.mjs` — one-time/idempotent bootstrap script that
-  seeds Sanity tool docs; the template for how the future GitHub crawler script
-  should write to Sanity too.
+  seeds Sanity tool docs via `createOrReplace` on a fixed, hand-maintained list keyed
+  by `tool-<mount>`. Structural precedent (ESM script, `@sanity/client`, env-var-only
+  credentials) for `scripts/crawl-github-repos.mjs`, but NOT an upsert-semantics
+  precedent for it: the crawler deliberately does not reuse this script's
+  upsert-across-runs behavior — it writes to the separate `tool-suggestion-<mount>`
+  namespace and is create-only there (checks existence first, skips rather than
+  overwrites), so a re-run never clobbers a human's in-progress edit to a suggestion.
+- `scripts/crawl-github-repos.mjs` — scans public `mdostal` repos and writes
+  `tool-suggestion-<mount>` Sanity docs (`hidden: true`, `live: false`) for human
+  review. See the "GitHub crawler" glossary entry above for its write semantics.
 - `DESIGN-BRIEF.md` — brand tokens + layout spec shared with sibling sites
   (mdostal.com, life.mdostal.com).
 
