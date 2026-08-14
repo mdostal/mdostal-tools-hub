@@ -31,9 +31,11 @@ const GITHUB_ACCOUNT = "mdostal";
 const SELF_REPO = "mdostal-tools-hub";
 
 // One-line manual denylist for repos that pass the mechanical filters but
-// still aren't tools. Empty by default -- a future manual addition here is
-// a one-line edit, not a code change.
-const EXCLUDED_REPOS = [];
+// still aren't tools. "mdostal" is the GitHub profile-README repo (special
+// repo named exactly the username) -- it has a real description ("Personal
+// Readme Page") so it passes the mechanical filter every time, but it is
+// never a "tool." Found by a real crawl run creating a bad suggestion for it.
+const EXCLUDED_REPOS = ["mdostal"];
 
 const DESCRIPTION_MAX_LENGTH = 280;
 
