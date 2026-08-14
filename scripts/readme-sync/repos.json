@@ -1,0 +1,15 @@
+[
+  { "key": "portunus",              "path": "/Users/mdostal/Documents/work/pantheon/portunus",       "repoUrl": "https://github.com/mdostal/portunus" },
+  { "key": "coin-finder",           "path": "/Users/mdostal/Documents/work/personal/coin-finder",    "repoUrl": "https://github.com/mdostal/coin-finder" },
+  { "key": "rolodex",               "path": "/Users/mdostal/Documents/work/rolodex",                 "repoUrl": "https://github.com/mdostal/rolodex" },
+  { "key": "mdostal-tools-hub",     "path": "/Users/mdostal/Code/mdostal-tools-hub",                 "repoUrl": "https://github.com/mdostal/mdostal-tools-hub" },
+  { "key": "drone-hub",             "path": "/Users/mdostal/Code/drone-hub",                         "repoUrl": "https://github.com/mdostal/drone-hub" },
+  { "key": "medical-study-tracker", "path": "/Users/mdostal/Code/medical-study-tracker",             "repoUrl": "https://github.com/mdostal/medical-study-tracker" },
+  { "key": "mapstack-us",           "path": "/Users/mdostal/Code/mapstack-us",                       "repoUrl": "https://github.com/mdostal/mapstack-us" },
+  { "key": "allergy-locator",       "path": "/Users/mdostal/Code/allergy-locator",                   "repoUrl": "https://github.com/mdostal/allergy-locator" },
+  { "key": "heimdall",              "path": "/Users/mdostal/Code/heimdall",                          "repoUrl": "https://github.com/mdostal/heimdall" },
+  { "key": "minerva",               "path": "/Users/mdostal/Documents/work/pantheon/minerva",        "repoUrl": "https://github.com/mdostal/minerva" },
+  { "key": "cleanup-tools",         "path": "/Users/mdostal/Documents/work/cleanup-tools",           "repoUrl": "https://github.com/mdostal/cleanup-tools" },
+  { "key": "gigradar",              "path": "/Users/mdostal/Documents/work/gigradar",                "repoUrl": "https://github.com/mdostal/gigradar" },
+  { "key": "mnemosyne",             "path": "/Users/mdostal/Documents/work/pantheon/mnemosyne",      "repoUrl": "https://github.com/mdostal/mnemosyne" }
+]

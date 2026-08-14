@@ -1,0 +1,15 @@
+{
+  "portunus": "A secret broker that finds secrets by metadata and injects them — without them ever touching your LLM",
+  "mapstack-us": "Every US public dataset on one map. 42 layers, zero setup",
+  "drone-hub": "Property-intelligence building blocks for drone imagery",
+  "medical-study-tracker": "Which clinical trials are actually worth it — cash, velocity, eligibility",
+  "allergy-locator": "Find where to live for your specific allergens",
+  "rolodex": "A local-first contact manager with an MCP server",
+  "gigradar": "An explainable radar for fractional gigs: scrape → gate → rank",
+  "coin-finder": "Scan a machine for crypto wallet files and check balances. CLI",
+  "cleanup-tools": "Reclaim disk on macOS with dry-run-first cleanup scripts",
+  "mdostal-tools-hub": "The directory for everything here",
+  "heimdall": "Health-aware routing gateway for an agent swarm",
+  "mnemosyne": "Unified memory — recall & remember over a vector + layer stack",
+  "minerva": "Turns an idea into a spec and a plan, headless"
+}

@@ -20,6 +20,16 @@ completely independent of this one.
    the landing-page listing and the `next.config.ts` rewrites — nothing
    else needs to change.
 
+## Managing copy across the whole portfolio
+
+[`scripts/readme-sync/`](scripts/readme-sync/) is the single source of truth for the
+byline, tagline, and "Support this project" section that every OSS repo in the portfolio
+shares -- edit it in one place, run `node scripts/readme-sync/sync.mjs`, every repo's
+README updates. Discovering which repos should be onboarded is `crawl-github-repos.mjs`'s
+job (a separate script here that scans the `mdostal` GitHub account and surfaces new
+candidates as suggestions); once a repo is ready, add it to `scripts/readme-sync/repos.json`
++ `taglines.json`.
+
 ## Why a separate repo at all
 
 `mdostal.com` itself is a real, existing production site (Sanity CMS, Cal.com
