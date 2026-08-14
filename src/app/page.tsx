@@ -156,11 +156,15 @@ export default async function Home() {
 
       <section className="mx-auto w-full max-w-4xl px-6 pt-8 pb-16">
         <h1 className="max-w-2xl text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-          Open tools, <span className="text-accent">built and shipped in public.</span>
+          Small, sharp tools. <span className="text-accent">Free and open.</span>
         </h1>
         <p className="mt-4 max-w-xl text-base text-muted">
-          A working shelf of open-source tools — real data, real methodology docs, MIT
-          licensed. Pick one below.
+          Open-source utilities I build, use, and wire into{" "}
+          <strong className="text-foreground">Pantheon</strong> — an agent layer that can pull any
+          of them in. If they&apos;re useful and folks want more, I&apos;ll keep shipping them.
+        </p>
+        <p className="mt-2 max-w-xl text-sm text-muted">
+          &rarr; Browse the tools below. Star what helps, file issues, make them better.
         </p>
       </section>
 
@@ -176,8 +180,64 @@ export default async function Home() {
         </div>
       </section>
 
+      <section className="mx-auto w-full max-w-4xl border-t border-border px-6 py-16">
+        <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+          Support / work with me
+        </h2>
+        <ul className="mt-4 max-w-xl space-y-2 text-base text-muted">
+          <li>
+            <strong className="text-foreground">Hire me</strong> — fractional CTO &amp;
+            consulting, fixing and scaling tech stacks &rarr;{" "}
+            <a
+              href="https://mdostal.com/contact"
+              className="text-accent hover:underline"
+              target="_blank"
+              rel="noreferrer"
+            >
+              mdostal.com/contact
+            </a>
+          </li>
+          <li>
+            <strong className="text-foreground">Buy me a coffee</strong> &rarr;{" "}
+            <a
+              href="https://www.buymeacoffee.com/mdostal"
+              className="text-accent hover:underline"
+              target="_blank"
+              rel="noreferrer"
+            >
+              buymeacoffee.com/mdostal
+            </a>
+          </li>
+          <li>
+            <strong className="text-foreground">Life outside the terminal</strong> &rarr;{" "}
+            <a
+              href="https://life.mdostal.com"
+              className="text-accent hover:underline"
+              target="_blank"
+              rel="noreferrer"
+            >
+              life.mdostal.com
+            </a>
+          </li>
+          <li>
+            <strong className="text-foreground">Firefly Events</strong> — event discovery,
+            8,000+ events/day &rarr;{" "}
+            <a
+              href="https://ff.events"
+              className="text-accent hover:underline"
+              target="_blank"
+              rel="noreferrer"
+            >
+              ff.events
+            </a>
+          </li>
+        </ul>
+      </section>
+
       <footer className="mx-auto flex w-full max-w-4xl flex-col gap-2 border-t border-border px-6 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
-        <span>MIT licensed. Built by Mathew Dostal.</span>
+        <span>
+          Built by Mathew Dostal. <em>Specialization is for insects.</em>
+        </span>
         <div className="flex items-center gap-5">
           <a href="https://github.com/mdostal" className="hover:text-foreground" target="_blank" rel="noreferrer">
             GitHub
