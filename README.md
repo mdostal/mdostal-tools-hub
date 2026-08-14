@@ -21,13 +21,17 @@ completely independent of this one.
    else needs to change.
 
 [`scripts/crawl-github-repos.mjs`](scripts/crawl-github-repos.mjs) automates
-step 1's discovery: run `node scripts/crawl-github-repos.mjs` for a dry-run
-summary of every public repo under the `mdostal` GitHub account, or add
-`--write` to actually create a hidden, unpublished Sanity suggestion doc for
-each real candidate (forks, archived repos, this repo, and already-listed
-tools are skipped automatically). Suggestions still need a human to fill in
-the gaps (screenshot, etc.) and flip `hidden`/`live` in Studio before they
-show up here — nothing it creates is ever live by itself.
+step 1's discovery, and runs on its own daily via
+[`.github/workflows/crawl-github-repos.yml`](.github/workflows/crawl-github-repos.yml)
+(also triggerable on demand from the Actions tab) — no manual step required.
+It scans every public repo under the `mdostal` GitHub account and creates a
+hidden, unpublished Sanity suggestion doc for each real candidate (forks,
+archived repos, this repo, already-listed tools, and anything in the script's
+`EXCLUDED_REPOS` denylist are skipped automatically). Suggestions still need a
+human to fill in the gaps (screenshot, etc.) and flip `hidden`/`live` in
+Studio before they show up here — nothing it creates is ever live by itself.
+Run `node scripts/crawl-github-repos.mjs` locally for a dry-run preview, or
+add `--write` to create suggestions outside the schedule.
 
 ## Why a separate repo at all
 

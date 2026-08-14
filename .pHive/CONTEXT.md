@@ -26,8 +26,12 @@ each one's mount path to its own independently-deployed Vercel project.
   never `tool-<mount>` (the curated/real namespace), so a crawler run can never
   collide with or overwrite a real published tool doc. Writes are create-only: if
   `tool-suggestion-<mount>` already exists (e.g. from a prior run, possibly hand-edited
-  in Studio since), the script skips it rather than overwriting. Defaults to a
-  dry-run that only prints a summary table; `--write` is required to actually create
+  in Studio since), the script skips it rather than overwriting. Runs daily via
+  `.github/workflows/crawl-github-repos.yml` (also manually triggerable from the
+  Actions tab). `EXCLUDED_REPOS` in the script is the denylist for repos that
+  pass the mechanical filters but aren't tools (e.g. the GitHub profile-README
+  repo). Defaults to a dry-run that only prints a summary table; `--write` is
+  required to actually create
   documents.
 
 ## Key paths
