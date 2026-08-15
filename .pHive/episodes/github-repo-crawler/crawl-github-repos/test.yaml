@@ -1,0 +1,5 @@
+step_id: test
+status: completed
+timestamp: "2026-08-14T19:15:00Z"
+artifacts: []
+notes: "Round 2: bullet-list-leading README bug fixed and re-verified live against ClusterExample + 4 known-good candidates. No regression. Lint clean."

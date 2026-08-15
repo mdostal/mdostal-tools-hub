@@ -1,0 +1,16 @@
+{
+  "agent_id": "a4ab0de902b67e7f3",
+  "session_id": "d83286f5-f9c5-4abc-a9b0-5be47933671a",
+  "agent_type": "general-purpose",
+  "cwd": "/Users/mdostal/Documents/work/personal/mdostal-tools-hub",
+  "agent_transcript_path": "/Users/mdostal/.claude/projects/-Users-mdostal-Documents-work-personal-mdostal-tools-hub/d83286f5-f9c5-4abc-a9b0-5be47933671a/subagents/agent-a4ab0de902b67e7f3.jsonl",
+  "last_assistant_message": "## Summary\n\n**File:** `/Users/mdostal/Documents/work/personal/mdostal-tools-hub/scripts/crawl-github-repos.mjs`\n\n**Fix 1 — list-item detection in `deriveDescriptionFromReadme`:**\n- Added `LIST_ITEM` regex (line 111): `/^(?:[-*+]\\s|\\d+\\.\\s)/`\n- In the \"find start of first real paragraph\" loop (line 127), added `if (LIST_ITEM.test(line)) continue;` so bullet/numbered list lines are skipped just like headings/rules/badges.\n- In the paragraph-collection loop (lines 133–144), added a break when a list item is encountered mid-collection (`if (i > start && LIST_ITEM.test(line)) break;`) — needed because ClusterExample's README has a real prose sentence immediately followed by a bullet list with no blank line separator; without this, the sentence and the next bullet would still get concatenated.\n\n**Fix 2 — description column in `printSummaryTable`:**\n- Added `truncateForColumn(text, maxLength)` helper (line ~190) and a `DESCRIPTION_COLUMN_MAX_LENGTH = 60` constant.\n- Added `\"description\"` to the `columns` array (line 196).\n- In `main()`, initialized `row.description = \"\"` and set `row.description = truncateForColumn(description, DESCRIPTION_COLUMN_MAX_LENGTH)` right after a description is successfully derived (before the `mount`/id logic).\n\n**ClusterExample description — before/after:**\n- Before: `\"- check your system with [KDoctor](https://github.com/Kotlin/kdoctor) - install JDK 17 or higher on your machine - add \\`local.properties\\` file to the project root and set a path to Android SDK there\"` (garbled bullet concatenation)\n- After: `\"To run the application on android device/emulator:\"` (a real sentence pulled from prose further down the README, past the list items)\n\n**Regression check (live dry-run against real GitHub account):**\n- `gigradar` → \"Open-source gig radar: define your accounts, needs, and rol…\"\n- `human-review` → \"Pantheon plugin: review dashboard UI for the approval plugi…\"\n- `rolodex` → \"Your relationship rolodex as an MCP tool: own your contacts…\"\n- `coin-finder` → \"Find my BTC and help me identify the wallets\"\n\nAll four unchanged/sensible — no regression. Full dry-run scanned 27 repos, 13 suggested, table now shows the new `description` column truncated to ~60 chars.\n\n**Lint:** `pnpm lint` → clean, exit code 0, no warnings/errors.",
+  "prompt_id": "b3007dc1-3912-420e-89c2-7c07a94be4cc",
+  "permission_mode": "bypassPermissions",
+  "effort": {
+    "level": "high"
+  },
+  "verdict": "failure",
+  "verdict_source": "missing_marker",
+  "written_at": "2026-08-14T18:47:33Z"
+}

@@ -1,0 +1,36 @@
+name: Crawl GitHub repos for tool suggestions
+
+on:
+  schedule:
+    # Daily at 13:00 UTC (~9am ET). Suggestions land hidden -- nothing goes
+    # live without a manual review + unhide in Sanity Studio.
+    - cron: "0 13 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: node scripts/crawl-github-repos.mjs --write
+        env:
+          NEXT_PUBLIC_SANITY_PROJECT_ID: dafshiq1
+          NEXT_PUBLIC_SANITY_DATASET: production
+          SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+          # The Actions-provided token, not a PAT -- just here to raise the
+          # GitHub API rate limit (5000/hr vs 60/hr unauthenticated), not for
+          # any repo-write permission. See scripts/crawl-github-repos.mjs's
+          # own header comment for what it's used for.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
