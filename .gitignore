@@ -5,7 +5,13 @@ dist/
 build/
 .vercel
 .env*
+!.env.example
 *.log
 .DS_Store
 next-env.d.ts
 *.tsbuildinfo
+
+# Hive runtime telemetry -- session-local bookkeeping (local paths, session
+# IDs, permission mode), not project content. Planning sidecars under
+# .pHive/epics/, .pHive/CONTEXT.md, etc. are intentionally still tracked.
+.pHive/agent-complete/

@@ -1,14 +1,16 @@
 #!/usr/bin/env node
-// Scans every public repo under the mdostal GitHub account, filters down to
-// real candidate tools, and writes each as a hidden/unpublished Sanity
-// "tool" suggestion document for human review -- never live, never
-// auto-published. Defaults to a dry-run (prints a summary table, writes
-// nothing); pass --write to actually create documents.
+// Scans every public repo under GITHUB_ACCOUNT, filters down to real
+// candidate tools, and writes each as a hidden/unpublished Sanity "tool"
+// suggestion document for human review -- never live, never auto-published.
+// Defaults to a dry-run (prints a summary table, writes nothing); pass
+// --write to actually create documents.
 //
 // Behavior specs: .pHive/epics/github-repo-crawler/docs/behavior-specs.md
 // Design context: .pHive/epics/github-repo-crawler/docs/design-discussion.md
 //
-// Env vars (never hardcode these):
+// Env vars (never hardcode these -- see .env.example):
+//   GITHUB_ACCOUNT -- the GitHub account to scan. Required (no default --
+//     scanning an unintended account by accident is worse than failing loud).
 //   NEXT_PUBLIC_SANITY_PROJECT_ID, NEXT_PUBLIC_SANITY_DATASET (default "production")
 //     -- public config, not secrets (see src/lib/sanity.ts's own comment).
 //     Used even in dry-run mode for the Sanity dedup-check read; if absent,
@@ -19,23 +21,39 @@
 //     still work, just at the lower 60/hr rate limit).
 //
 // Usage:
-//   node scripts/crawl-github-repos.mjs              # dry-run, prints summary
-//   node scripts/crawl-github-repos.mjs --write       # actually creates docs
+//   GITHUB_ACCOUNT=you node scripts/crawl-github-repos.mjs              # dry-run, prints summary
+//   GITHUB_ACCOUNT=you node scripts/crawl-github-repos.mjs --write       # actually creates docs
 //
-//   NEXT_PUBLIC_SANITY_PROJECT_ID=... NEXT_PUBLIC_SANITY_DATASET=production \
+//   GITHUB_ACCOUNT=you NEXT_PUBLIC_SANITY_PROJECT_ID=... NEXT_PUBLIC_SANITY_DATASET=production \
 //   SANITY_API_WRITE_TOKEN=... node scripts/crawl-github-repos.mjs --write
 
 import { createClient } from "@sanity/client";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
 
-const GITHUB_ACCOUNT = "mdostal";
-const SELF_REPO = "mdostal-tools-hub";
+const GITHUB_ACCOUNT = process.env.GITHUB_ACCOUNT;
 
-// One-line manual denylist for repos that pass the mechanical filters but
-// still aren't tools. "mdostal" is the GitHub profile-README repo (special
-// repo named exactly the username) -- it has a real description ("Personal
-// Readme Page") so it passes the mechanical filter every time, but it is
-// never a "tool." Found by a real crawl run creating a bad suggestion for it.
-const EXCLUDED_REPOS = ["mdostal"];
+if (!GITHUB_ACCOUNT) {
+  console.error("Missing GITHUB_ACCOUNT. Set it to the GitHub account to scan (see .env.example).");
+  process.exit(1);
+}
+
+// This repo's own name, so it always self-excludes regardless of what the
+// repo is called -- derived from package.json rather than hardcoded, since
+// a fork won't necessarily keep the same repo name.
+const SELF_REPO = JSON.parse(
+  readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "package.json"), "utf8"),
+).name;
+
+// Manual denylist for repos that pass the mechanical filters but still
+// aren't tools -- empty by default, a future addition here is a one-line
+// edit, not a code change. GITHUB_ACCOUNT's own GitHub profile-README repo
+// (a special repo named exactly the account name) always self-excludes: it
+// has a real description ("Personal Readme Page" or similar) so it passes
+// the mechanical filter every time, but it is never a "tool." Found by a
+// real crawl run creating a bad suggestion for it.
+const EXCLUDED_REPOS = [GITHUB_ACCOUNT];
 
 const DESCRIPTION_MAX_LENGTH = 280;
 

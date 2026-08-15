@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { getTools } from "@/lib/tools";
 import type { ToolEntry } from "@/lib/tools";
+import { siteConfig } from "@/lib/site-config";
 
 /** Badge over the screenshot's top-left corner (LiveBadge mirrors this on
  *  the right) -- only rendered when the tool has an icon field set; cards
@@ -176,30 +177,23 @@ export default async function Home() {
     <main className="min-h-full">
       <header className="mx-auto flex w-full max-w-4xl items-center justify-between px-6 py-8">
         <span className="font-mono text-sm font-medium tracking-tight text-foreground">
-          tools<span className="text-muted">.</span>mdostal
+          {siteConfig.siteName}
         </span>
         <nav className="flex items-center gap-5 text-sm text-muted">
-          <a href="https://life.mdostal.com" className="hover:text-foreground" target="_blank" rel="noreferrer">
-            life.mdostal.com →
-          </a>
-          <a href="https://mdostal.com" className="hover:text-foreground" target="_blank" rel="noreferrer">
-            mdostal.com →
-          </a>
+          {siteConfig.navLinks.map((link) => (
+            <a key={link.url} href={link.url} className="hover:text-foreground" target="_blank" rel="noreferrer">
+              {link.label}
+            </a>
+          ))}
         </nav>
       </header>
 
       <section className="mx-auto w-full max-w-4xl px-6 pt-8 pb-16">
         <h1 className="max-w-2xl text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-          Small, sharp tools. <span className="text-accent">Free and open.</span>
+          {siteConfig.heroHeadline} <span className="text-accent">{siteConfig.heroAccent}</span>
         </h1>
-        <p className="mt-4 max-w-xl text-base text-muted">
-          Open-source utilities I build, use, and wire into{" "}
-          <strong className="text-foreground">Pantheon</strong> — an agent layer that can pull any
-          of them in. If they&apos;re useful and folks want more, I&apos;ll keep shipping them.
-        </p>
-        <p className="mt-2 max-w-xl text-sm text-muted">
-          &rarr; Browse the tools below. Star what helps, file issues, make them better.
-        </p>
+        <p className="mt-4 max-w-xl text-base text-muted">{siteConfig.heroDescription}</p>
+        <p className="mt-2 max-w-xl text-sm text-muted">{siteConfig.heroSubtext}</p>
       </section>
 
       <section className="mx-auto w-full max-w-4xl px-6 pb-24">
@@ -215,70 +209,33 @@ export default async function Home() {
       </section>
 
       <section className="mx-auto w-full max-w-4xl border-t border-border px-6 py-16">
-        <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-          Support / work with me
-        </h2>
+        <h2 className="text-2xl font-semibold tracking-tight text-foreground">{siteConfig.supportHeading}</h2>
         <ul className="mt-4 max-w-xl space-y-2 text-base text-muted">
-          <li>
-            <strong className="text-foreground">Hire me</strong> — fractional CTO &amp;
-            consulting, fixing and scaling tech stacks &rarr;{" "}
-            <a
-              href="https://mdostal.com/contact"
-              className="text-accent hover:underline"
-              target="_blank"
-              rel="noreferrer"
-            >
-              mdostal.com/contact
-            </a>
-          </li>
-          <li>
-            <strong className="text-foreground">Buy me a coffee</strong> &rarr;{" "}
-            <a
-              href="https://www.buymeacoffee.com/mdostal"
-              className="text-accent hover:underline"
-              target="_blank"
-              rel="noreferrer"
-            >
-              buymeacoffee.com/mdostal
-            </a>
-          </li>
-          <li>
-            <strong className="text-foreground">Life outside the terminal</strong> &rarr;{" "}
-            <a
-              href="https://life.mdostal.com"
-              className="text-accent hover:underline"
-              target="_blank"
-              rel="noreferrer"
-            >
-              life.mdostal.com
-            </a>
-          </li>
-          <li>
-            <strong className="text-foreground">Firefly Events</strong> — event discovery,
-            8,000+ events/day &rarr;{" "}
-            <a
-              href="https://ff.events"
-              className="text-accent hover:underline"
-              target="_blank"
-              rel="noreferrer"
-            >
-              ff.events
-            </a>
-          </li>
+          {siteConfig.supportLinks.map((link) => (
+            <li key={link.url}>
+              <strong className="text-foreground">{link.label}</strong>
+              {link.description ? <> — {link.description}</> : null} &rarr;{" "}
+              <a href={link.url} className="text-accent hover:underline" target="_blank" rel="noreferrer">
+                {link.url.replace(/^https?:\/\//, "")}
+              </a>
+            </li>
+          ))}
         </ul>
       </section>
 
       <footer className="mx-auto flex w-full max-w-4xl flex-col gap-2 border-t border-border px-6 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
         <span>
-          Built by Mathew Dostal. <em>Specialization is for insects.</em>
+          Built by {siteConfig.ownerName}.{siteConfig.footerTagline ? <em> {siteConfig.footerTagline}</em> : null}
         </span>
         <div className="flex items-center gap-5">
-          <a href="https://github.com/mdostal" className="hover:text-foreground" target="_blank" rel="noreferrer">
+          <a href={siteConfig.githubProfileUrl} className="hover:text-foreground" target="_blank" rel="noreferrer">
             GitHub
           </a>
-          <a href="https://mdostal.com" className="hover:text-foreground" target="_blank" rel="noreferrer">
-            mdostal.com →
-          </a>
+          {siteConfig.ownerUrl && (
+            <a href={siteConfig.ownerUrl} className="hover:text-foreground" target="_blank" rel="noreferrer">
+              {siteConfig.ownerUrlLabel || siteConfig.ownerUrl.replace(/^https?:\/\//, "")} →
+            </a>
+          )}
         </div>
       </footer>
     </main>
