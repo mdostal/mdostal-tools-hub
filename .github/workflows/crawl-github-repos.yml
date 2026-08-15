@@ -26,8 +26,15 @@ jobs:
 
       - run: node scripts/crawl-github-repos.mjs --write
         env:
-          NEXT_PUBLIC_SANITY_PROJECT_ID: dafshiq1
-          NEXT_PUBLIC_SANITY_DATASET: production
+          # Repository variables (Settings -> Secrets and variables -> Actions
+          # -> Variables), not secrets -- a GitHub account name and a Sanity
+          # project ID/dataset are meant to be public (see .env.example).
+          # GitHub Actions rejects repo variable names starting with GITHUB_
+          # (reserved prefix) -- CRAWL_GITHUB_ACCOUNT is the repo variable,
+          # mapped here to the GITHUB_ACCOUNT env var the script reads.
+          GITHUB_ACCOUNT: ${{ vars.CRAWL_GITHUB_ACCOUNT }}
+          NEXT_PUBLIC_SANITY_PROJECT_ID: ${{ vars.NEXT_PUBLIC_SANITY_PROJECT_ID }}
+          NEXT_PUBLIC_SANITY_DATASET: ${{ vars.NEXT_PUBLIC_SANITY_DATASET }}
           SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
           # The Actions-provided token, not a PAT -- just here to raise the
           # GitHub API rate limit (5000/hr vs 60/hr unauthenticated), not for

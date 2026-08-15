@@ -36,6 +36,11 @@ each one's mount path to its own independently-deployed Vercel project.
 
 ## Key paths
 
+- `src/lib/site-config.ts` — every deployment-specific value (GitHub account
+  to crawl, hero copy, nav/support links, footer) read from env vars with
+  generic fallback defaults. Nothing in `src/` or `scripts/` should hardcode
+  this deployment's identity directly -- see `.env.example` and README.md's
+  "Forking this for your own GitHub" section.
 - `src/lib/tools.ts` — `getTools()`: the single data-fetch function used by BOTH
   the landing page and `next.config.ts`'s rewrite generator. Fetches from Sanity,
   falls back to hardcoded `FALLBACK_TOOLS` on any failure.
