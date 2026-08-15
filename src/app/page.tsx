@@ -61,7 +61,7 @@ function OpenAndSourceLinks({ tool }: { tool: ToolEntry }) {
           href={`${tool.repoUrl}/releases/latest`}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex h-10 items-center justify-center rounded-lg border border-border px-4 text-sm font-semibold text-foreground transition-colors hover:border-accent/50"
+          className="inline-flex h-10 items-center justify-center rounded-lg bg-accent px-4 text-sm font-semibold text-black transition-opacity hover:opacity-90"
           title="Not deployed anywhere right now -- grab the newest GitHub release instead"
         >
           Download latest release ↓
