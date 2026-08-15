@@ -45,6 +45,7 @@ export const allToolsQuery = `*[_type == "tool" && hidden != true] | order(sortO
   pagesUrl,
   live,
   screenshot,
+  icon,
   components
 }`;
 
@@ -57,5 +58,6 @@ export interface SanityToolDoc {
   pagesUrl?: string;
   live: boolean;
   screenshot?: SanityImageSource;
+  icon?: SanityImageSource;
   components?: { label: string; href: string }[];
 }
