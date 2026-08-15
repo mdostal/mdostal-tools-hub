@@ -1,0 +1,52 @@
+concerns:
+  - id: documentation
+    name: Documentation Updates
+    description: >
+      When a story changes user-facing behavior, workflow steps, or configuration,
+      corresponding documentation must be updated.
+    applies_when: >
+      Story modifies workflows, schemas, directory structure, configuration files,
+      or adds/removes/renames reference documents
+    planning_prompt: >
+      Which documentation files reference the behavior this story changes?
+      List each doc and what section needs updating.
+    implementation_checklist:
+      - "All docs referencing changed behavior identified"
+      - "Affected sections updated to reflect new behavior"
+      - "No stale references to old behavior remain"
+
+  - id: secrets-hygiene
+    name: Secrets & Public-Repo Hygiene
+    description: >
+      This repo is PUBLIC on GitHub. Any story touching env vars, API clients,
+      or new external integrations (e.g. GitHub API access for the crawler)
+      must keep credentials out of tracked files and git history.
+    applies_when: >
+      Story adds a new env var, API client, GitHub token usage, or any script
+      that authenticates to an external service.
+    planning_prompt: >
+      Does this story introduce a new credential or token? Confirm it is read
+      from process.env (never hardcoded) and that .gitignore already covers
+      any new secret file pattern before the first commit.
+    implementation_checklist:
+      - "No secret/token value appears in tracked source, only process.env reads"
+      - ".gitignore covers any new .env-like file pattern introduced"
+      - "git diff reviewed for accidental credential inclusion before commit"
+
+  - id: multi-zone-routing-safety
+    name: Multi-Zone Routing Safety
+    description: >
+      next.config.ts's rewrites() and src/lib/tools.ts's getTools() drive both
+      the landing-page cards and the live proxy routes from the same data.
+      Changes here risk silently breaking a currently-live tool's route.
+    applies_when: >
+      Story modifies next.config.ts, src/lib/tools.ts, src/lib/sanity.ts, or
+      the Sanity "tool" document schema/query shape.
+    planning_prompt: >
+      Does this change affect the shape of ToolEntry or the rewrite rules
+      generated from it? Which currently-live tools (live: true) need to be
+      manually re-verified after this change?
+    implementation_checklist:
+      - "Existing live: true tools still resolve to their correct originUrl"
+      - "getTools() fallback (FALLBACK_TOOLS) still matches the current live set if Sanity is unreachable"
+      - "No change to ToolEntry shape without updating both consumers (page.tsx and next.config.ts)"

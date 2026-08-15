@@ -1,0 +1,16 @@
+{
+  "agent_id": "ae3e3220f57a96a48",
+  "session_id": "d83286f5-f9c5-4abc-a9b0-5be47933671a",
+  "agent_type": "",
+  "cwd": "/Users/mdostal/Documents/work/personal/mdostal-tools-hub",
+  "agent_transcript_path": "/Users/mdostal/.claude/projects/-Users-mdostal-Documents-work-personal-mdostal-tools-hub/d83286f5-f9c5-4abc-a9b0-5be47933671a/subagents/agent-ae3e3220f57a96a48.jsonl",
+  "last_assistant_message": "Grilling design-discussion.md for gaps",
+  "prompt_id": "afbe6c17-ece2-4152-90cc-a7ceeccf74d8",
+  "permission_mode": "bypassPermissions",
+  "effort": {
+    "level": "high"
+  },
+  "verdict": "failure",
+  "verdict_source": "missing_marker",
+  "written_at": "2026-08-13T00:42:23Z"
+}

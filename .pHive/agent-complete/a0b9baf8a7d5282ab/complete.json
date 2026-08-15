@@ -1,0 +1,16 @@
+{
+  "agent_id": "a0b9baf8a7d5282ab",
+  "session_id": "d83286f5-f9c5-4abc-a9b0-5be47933671a",
+  "agent_type": "",
+  "cwd": "/Users/mdostal/Documents/work/personal/mdostal-tools-hub",
+  "agent_transcript_path": "/Users/mdostal/.claude/projects/-Users-mdostal-Documents-work-personal-mdostal-tools-hub/d83286f5-f9c5-4abc-a9b0-5be47933671a/subagents/agent-a0b9baf8a7d5282ab.jsonl",
+  "last_assistant_message": "We're setting up Hive on mdostal-tools-hub and just finished planning the GitHub repo crawler feature (script + story ready on branch feat/github-repo-crawler). Next: confirm the plan so I can commit it.",
+  "prompt_id": "dd488c1c-ee15-44eb-a2e6-76db14dabcb2",
+  "permission_mode": "bypassPermissions",
+  "effort": {
+    "level": "high"
+  },
+  "verdict": "failure",
+  "verdict_source": "missing_marker",
+  "written_at": "2026-08-13T00:54:42Z"
+}

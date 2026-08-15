@@ -1,0 +1,204 @@
+id: crawl-github-repos
+epic: github-repo-crawler
+title: Crawl mdostal's public GitHub repos and write suggested Sanity tool entries
+status: pending
+complexity: medium
+methodology: bdd
+depends_on: []
+
+description: |
+  Add scripts/crawl-github-repos.mjs: a re-runnable Node script that scans every
+  public repo under the mdostal GitHub account, filters out forks/archived/
+  already-listed/self/denylisted repos, derives a suggested tool entry (label,
+  mount, description, repoUrl, originUrl) from each survivor's metadata + README,
+  and writes it to Sanity as a hidden, unpublished "tool" document for human
+  review -- never live, never auto-published. Defaults to a dry-run; --write
+  actually creates documents. Re-running is safe: a suggestion is created once
+  and never overwritten by a later run (so a human's in-progress edit in Studio
+  is never clobbered), and existing curated tool-* docs are never touched at all
+  (suggestions live in a separate tool-suggestion-* id namespace).
+
+  Full design context: .pHive/epics/github-repo-crawler/docs/design-discussion.md
+  (see especially §3 for the exact algorithm, revised after an adversarial grill
+  pass -- §3 items 5 and the README heuristic under item 4 encode fixes for real
+  bugs the grill pass found, not just style preferences).
+
+acceptance_criteria:
+  - "Given the mdostal GitHub account has N public, non-fork, non-archived repos not already represented by a tool-* Sanity doc, when the script runs with --write, then it creates a tool-suggestion-<mount> Sanity document for each repo that has a non-null description or a fetchable README, with hidden: true and live: false, and skips the rest with a logged reason."
+  - "Given a repo is a fork, is archived, is mdostal-tools-hub itself, is already represented by an existing tool-* doc (matched by repoUrl), or is in the EXCLUDED_REPOS denylist, when the script runs, then no suggestion document is created or considered for that repo."
+  - "Given a tool-suggestion-<mount> document already exists from a prior run, when the script runs again, then that document is left untouched (not overwritten) and the summary table reports it as \"skipped: already suggested\"."
+  - "Given the script is run with no flags, when it processes the account, then it prints the summary table (repo -> suggested/skipped + reason) and writes nothing to Sanity; only --write performs the actual Sanity writes."
+  - "Given a repo's description is null but its README has a real paragraph after stripping ATX headings, horizontal rules, blank lines, and pure badge/image lines, when the script derives a description, then it uses that first real paragraph, not a heading, rule, or badge line."
+  - "Given a repo's homepage field is set on GitHub, when the script derives originUrl, then it uses that homepage value verbatim; when homepage is unset, originUrl is omitted from the document rather than guessed."
+
+steps:
+  - id: research
+    description: >
+      Confirm the current Sanity tool schema (/Users/mdostal/Code/personal-site/sanity/schemas/tool.ts)
+      still matches what design-discussion.md §2 describes (hidden/live fields,
+      required fields) before writing code -- re-verify, since this personal-site
+      checkout is a separate repo that may have moved since planning.
+    agent: researcher
+  - id: behavior-spec
+    description: >
+      Write Given/When/Then behavior specs (can live as comments/fixtures alongside
+      the script, since this repo has no test framework -- see project-profile.yaml
+      test_infrastructure) covering each acceptance criterion above, including the
+      three grill-derived edge cases: already-suggested-doc skip, README
+      heading/rule/badge stripping, and homepage-present vs. homepage-absent
+      originUrl handling.
+    agent: tester
+    depends_on: [research]
+  - id: implement
+    description: >
+      Implement scripts/crawl-github-repos.mjs per design-discussion.md §3 items
+      1-7. Include the summary-table output, the --write flag gate (dry-run
+      default), the EXCLUDED_REPOS denylist array (empty by default), and the
+      create-only write logic for tool-suggestion-<mount> docs. Update
+      .pHive/CONTEXT.md's "GitHub crawler" glossary entry and
+      migrate-tools-to-sanity.mjs Key Paths entry per the documentation
+      cross-cutting concern below. Add a short mention of the new script to
+      README.md, following the existing "How a tool gets added" section's
+      precedent/tone.
+    agent: developer
+    depends_on: [behavior-spec]
+  - id: test
+    description: >
+      No test framework exists in this repo (test_absence: true). Verify manually
+      per design-discussion.md §7 Verification Plan: run --dry-run against the
+      real mdostal account and confirm the summary table matches the known set
+      (9 forks skipped, 4 existing tools skipped as already-listed, self skipped,
+      remaining candidates suggested or skipped-no-signal as expected from the
+      research brief's live data). Then run once with --write against a scratch
+      Sanity dataset (or the real dataset, reviewed immediately after) and confirm
+      in Studio that new docs are hidden:true, live:false, under the
+      tool-suggestion-* id prefix, and that the 4 existing tool-* docs are
+      byte-for-byte unchanged. Re-run --write a second time and confirm no
+      duplicate/overwritten suggestion docs are created.
+    agent: tester
+    depends_on: [implement]
+  - id: review
+    description: >
+      Review implementation against design-discussion.md §3-4 and this story's
+      acceptance criteria, with particular attention to the three risk items the
+      grill pass raised (re-run safety for both curated docs and in-progress
+      suggestion edits; README heuristic correctness; no premature GITHUB_ACCOUNT
+      abstraction). Confirm secrets-hygiene cross-cutting concern: no token is
+      logged or hardcoded anywhere, including in the summary-table output.
+    agent: reviewer
+    depends_on: [test]
+
+do_not:
+  - "Do NOT modify next.config.ts, src/lib/tools.ts, or src/lib/sanity.ts -- this story is additive-only (a new standalone script); the multi-zone-routing-safety cross-cutting concern does not apply and should stay that way."
+  - "Do NOT write to, or overwrite, any existing tool-<mount> Sanity document -- suggestions are tool-suggestion-<mount> only, and creation is skip-if-exists (never upsert)."
+  - "Do NOT set live: true or omit hidden: true on any document this script creates -- every suggestion must land unpublished, no exceptions, no config flag to bypass this."
+  - "Do NOT hardcode or log SANITY_API_WRITE_TOKEN / GITHUB_TOKEN anywhere, including in the summary-table output or error messages."
+  - "Do NOT add a GITHUB_ACCOUNT env var or CLI flag for v1 -- mdostal is a hardcoded constant per design_decisions above; a v2 story can parameterize it if that direction is ever picked up."
+  - "Do NOT wire a GitHub Actions cron/schedule in this story -- v1 is manual-trigger only per the resolved open question 3."
+  - id: integrate
+    description: Commit and push to feat/github-repo-crawler.
+    agent: developer
+    depends_on: [review]
+
+context:
+  codebase: /Users/mdostal/Documents/work/personal/mdostal-tools-hub
+  tech_stack:
+    languages: [javascript]
+    runtime: node (22, per .github/workflows/ci.yml)
+    package_manager: pnpm
+  key_files:
+    - path: scripts/migrate-tools-to-sanity.mjs
+      purpose: >
+        Structural precedent -- pnpm-runnable Node script, @sanity/client,
+        process.env-only credentials. NOT an upsert-semantics precedent for this
+        story: that script does a fixed-list createOrReplace seed; this one must
+        be create-only for suggestion docs (see design-discussion.md §3 item 5).
+    - path: src/lib/sanity.ts
+      purpose: Existing read-only Sanity client + allToolsQuery pattern to mirror for the new script's Sanity reads (dedup check against existing tool-* docs).
+    - path: src/lib/tools.ts
+      purpose: ToolEntry shape the suggested documents' fields must be compatible with.
+    - path: .pHive/CONTEXT.md
+      purpose: Domain glossary to update per the documentation cross-cutting concern (GitHub crawler entry, migrate-tools-to-sanity.mjs Key Paths entry).
+
+files_to_modify:
+  - file: scripts/crawl-github-repos.mjs
+    change: New file -- the crawler script.
+  - file: .pHive/CONTEXT.md
+    change: Update "GitHub crawler" terminology entry and migrate-tools-to-sanity.mjs Key Paths entry per grill V1/C1.
+  - file: README.md
+    change: Add a short mention of the new script near the existing "How a tool gets added" section.
+
+code_examples:
+  - title: Sanity write client pattern to mirror (credentials, createOrReplace shape)
+    file: scripts/migrate-tools-to-sanity.mjs
+    snippet: |
+      const token = process.env.SANITY_API_WRITE_TOKEN;
+      if (!projectId || !token) { /* fail fast with a clear message */ }
+      const client = createClient({ projectId, dataset, apiVersion: "2025-02-19", token, useCdn: false });
+      // migrate script: createOrReplace(doc) keyed by a fixed deterministic _id.
+      // THIS story's script must NOT reuse that upsert-across-runs behavior for
+      // suggestion docs -- check existence first, create-only, skip if present.
+
+design_decisions:
+  - decision: Suggestion documents live at _id "tool-suggestion-<mount>", never "tool-<mount>".
+    rationale: >
+      Structurally impossible to collide with (and overwrite) a real curated tool
+      document, regardless of any bug elsewhere in the script. Identified during
+      the design-discussion draft, sharpened by grill finding U1 (see
+      design-discussion.md §3 item 5).
+  - decision: Suggestion writes are create-only (check existence, skip if present) rather than upsert.
+    rationale: >
+      Without this, a scheduled/repeated run would silently discard a human's
+      in-progress edit to a not-yet-approved suggestion in Studio. Added directly
+      in response to grill finding U1.
+  - decision: mdostal is a hardcoded constant, not a GITHUB_ACCOUNT env var, for v1.
+    rationale: >
+      The stated v2 "reusable for other developers" direction is an explicit
+      non-goal for this epic (design-discussion.md §1); making the account
+      configurable now was an unacknowledged small contradiction of that,
+      flagged by grill finding P1.
+
+cross_cutting:
+  - concern: documentation
+    action: >
+      Update .pHive/CONTEXT.md's "GitHub crawler" glossary entry to describe the
+      tool-suggestion-* id namespace, and its migrate-tools-to-sanity.mjs Key
+      Paths entry to note the different (create-only, not upsert) write semantics
+      used by the new script. Add a short mention of scripts/crawl-github-repos.mjs
+      to README.md.
+  - concern: secrets-hygiene
+    action: >
+      GITHUB_TOKEN (optional) and SANITY_API_WRITE_TOKEN (required for --write)
+      are read from process.env only, never hardcoded, never included in the
+      summary-table output or any log line. No new .env-like file pattern is
+      introduced, so .gitignore needs no changes.
+
+risks:
+  - severity: medium
+    description: README description-fallback heuristic may still produce a poor result for repos outside the 4 verified candidates.
+    mitigation: Every suggestion is hidden:true and reviewed by a human in Studio before it can go live -- a bad auto-description is an editing inconvenience, not a live-site defect.
+  - severity: low
+    description: originUrl derived from GitHub's homepage field could be stale or wrong for a given repo.
+    mitigation: Same review-before-live gate; live also requires a separate live:true flip that a human controls.
+  - severity: low
+    description: Unauthenticated GitHub API calls (60/hr) could be exhausted during iterative development/testing of this script.
+    mitigation: Optional GITHUB_TOKEN env var documented in the script's header comment, same pattern as SANITY_API_WRITE_TOKEN.
+
+references:
+  - path: .pHive/epics/github-repo-crawler/docs/design-discussion.md
+    relevant_excerpt: |
+      §3 items 1-7 (the full proposed approach, revised after grill), §4 (risk
+      list with mitigations), §6 (three open questions -- now resolved: manual
+      denylist array, dry-run-by-default, manual-trigger-only for v1).
+  - path: .pHive/epics/github-repo-crawler/docs/grill-record.md
+    relevant_excerpt: |
+      U1 (unresolved tension -- re-run safety for suggestion docs), H1 (hidden
+      assumption -- README heuristic ungrounded), V1/C1 (CONTEXT.md staleness),
+      P1 (posture -- premature GITHUB_ACCOUNT abstraction). All four resolved in
+      the revised design-discussion.md and reflected in this story's steps/design_decisions.
+  - path: /Users/mdostal/Code/personal-site/sanity/schemas/tool.ts
+    relevant_excerpt: |
+      hidden (boolean, default false) -- "Same pattern as Case Study's hidden
+      flag: build/review here before it goes live." live (boolean, default
+      false) -- separately gates the routing rewrite. Required fields: label,
+      mount, description, originUrl, repoUrl, screenshot.

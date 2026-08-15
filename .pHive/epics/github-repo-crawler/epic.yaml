@@ -1,0 +1,35 @@
+name: github-repo-crawler
+title: GitHub Repo Crawler
+description: >
+  Scan all public repos under the mdostal GitHub account, pull README +
+  metadata, and write suggested Sanity "tool" documents (hidden, unpublished)
+  for human review/approval -- never auto-published. v1 targets the mdostal
+  account only; captured from kickoff's north-star discovery
+  (.pHive/project-profile.yaml -> north_star.github_crawler_scope).
+target_codebase: /Users/mdostal/Documents/work/personal/mdostal-tools-hub
+methodology: bdd
+version_bump: none
+sidecar_retention: committed
+
+git_flow:
+  base_branch: main
+  branch_strategy: per-epic
+
+planning_team:
+  matched_tags: [architecture, security, data]
+  roster: [researcher, technical-writer, tpm, architect, security-reviewer]
+  per_tag_reasoning:
+    architecture: "New script establishing a new integration between two external systems (GitHub API, Sanity) -- a structural addition, not a change within one existing layer."
+    security: "Requires two credentials (GITHUB_TOKEN, SANITY_API_WRITE_TOKEN); credential handling for a script writing to a public-repo-backed CMS is a first-class concern."
+    data: "Introduces a new data pipeline (GitHub repo metadata -> Sanity draft documents) plus a new id-namespace convention (tool-suggestion-*) alongside existing tool-* documents."
+  confidence: matched
+  gate_decisions:
+    architecture: included
+    security: included
+    data: included
+
+stories:
+  - id: crawl-github-repos
+    title: Crawl mdostal's public GitHub repos and write suggested Sanity tool entries
+    complexity: medium
+    depends_on: []

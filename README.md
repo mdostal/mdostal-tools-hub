@@ -27,15 +27,26 @@ completely independent of this one.
    the landing-page listing and the `next.config.ts` rewrites — nothing
    else needs to change.
 
+[`scripts/crawl-github-repos.mjs`](scripts/crawl-github-repos.mjs) automates
+step 1's discovery, and runs on its own daily via
+[`.github/workflows/crawl-github-repos.yml`](.github/workflows/crawl-github-repos.yml)
+(also triggerable on demand from the Actions tab) — no manual step required.
+It scans every public repo under the `mdostal` GitHub account and creates a
+hidden, unpublished Sanity suggestion doc for each real candidate (forks,
+archived repos, this repo, already-listed tools, and anything in the script's
+`EXCLUDED_REPOS` denylist are skipped automatically). Suggestions still need a
+human to fill in the gaps (screenshot, etc.) and flip `hidden`/`live` in
+Studio before they show up here — nothing it creates is ever live by itself.
+Run `node scripts/crawl-github-repos.mjs` locally for a dry-run preview, or
+add `--write` to create suggestions outside the schedule.
+
 ## Managing copy across the whole portfolio
 
 [`scripts/readme-sync/`](scripts/readme-sync/) is the single source of truth for the
 byline, tagline, and "Support this project" section that every OSS repo in the portfolio
 shares -- edit it in one place, run `node scripts/readme-sync/sync.mjs`, every repo's
-README updates. Discovering which repos should be onboarded is `crawl-github-repos.mjs`'s
-job (a separate script here that scans the `mdostal` GitHub account and surfaces new
-candidates as suggestions); once a repo is ready, add it to `scripts/readme-sync/repos.json`
-+ `taglines.json`.
+README updates. Once a repo discovered above is ready, add it to
+`scripts/readme-sync/repos.json` + `taglines.json`.
 
 ## Why a separate repo at all
 

@@ -1,0 +1,16 @@
+{
+  "agent_id": "a99f2984d691d281e",
+  "session_id": "d83286f5-f9c5-4abc-a9b0-5be47933671a",
+  "agent_type": "",
+  "cwd": "/Users/mdostal/Documents/work/personal/mdostal-tools-hub",
+  "agent_transcript_path": "/Users/mdostal/.claude/projects/-Users-mdostal-Documents-work-personal-mdostal-tools-hub/d83286f5-f9c5-4abc-a9b0-5be47933671a/subagents/agent-a99f2984d691d281e.jsonl",
+  "last_assistant_message": "Tracing ClusterExample README line-by-line",
+  "prompt_id": "b3007dc1-3912-420e-89c2-7c07a94be4cc",
+  "permission_mode": "bypassPermissions",
+  "effort": {
+    "level": "high"
+  },
+  "verdict": "failure",
+  "verdict_source": "missing_marker",
+  "written_at": "2026-08-14T18:46:54Z"
+}
