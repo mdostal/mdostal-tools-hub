@@ -1,0 +1,4 @@
+# Copy this to a new repo:  github.com/mdostal/.github  →  .github/FUNDING.yml
+# It becomes the default Sponsor button for ALL your public repos. One file, all of them.
+buy_me_a_coffee: mdostal
+custom: ["https://mdostal.com/contact", "https://tools.mdostal.com"]

@@ -1,5 +1,12 @@
 # mdostal-tools-hub
 
+<!-- shared:tagline -->
+> The directory for everything here. Free & open source.
+<!-- /shared:tagline -->
+<!-- shared:byline -->
+Built by [Mathew Dostal](https://mdostal.com) — fractional CTO, Dostal Technology.
+<!-- /shared:byline -->
+
 The router behind **tools.mdostal.com**. A minimal Next.js app whose only job
 is to (1) list every live tool as a directory landing page, and (2) proxy
 each tool's mount path to its own independently-deployed Vercel project,
@@ -33,6 +40,14 @@ Studio before they show up here — nothing it creates is ever live by itself.
 Run `node scripts/crawl-github-repos.mjs` locally for a dry-run preview, or
 add `--write` to create suggestions outside the schedule.
 
+## Managing copy across the whole portfolio
+
+[`scripts/readme-sync/`](scripts/readme-sync/) is the single source of truth for the
+byline, tagline, and "Support this project" section that every OSS repo in the portfolio
+shares -- edit it in one place, run `node scripts/readme-sync/sync.mjs`, every repo's
+README updates. Once a repo discovered above is ready, add it to
+`scripts/readme-sync/repos.json` + `taglines.json`.
+
 ## Why a separate repo at all
 
 `mdostal.com` itself is a real, existing production site (Sanity CMS, Cal.com
@@ -44,3 +59,18 @@ the main site and from each other.
 ## License
 
 MIT — see [`LICENSE`](LICENSE).
+
+<!-- shared:support -->
+## Support this project
+
+Free and open source, always. A few ways to help — or just say hi:
+
+- **Use it, star it, file an issue.** Honestly the best support an open-source project can get. → [this project](https://github.com/mdostal/mdostal-tools-hub)
+- **Hire me.** I do fractional-CTO and consulting work — fixing and scaling tech stacks. → [mdostal.com/contact](https://mdostal.com/contact)
+- **[Buy me a coffee](https://www.buymeacoffee.com/mdostal)** if it saved you time.
+- **More tools like this** → [tools.mdostal.com](https://tools.mdostal.com)
+- **Life outside the terminal** → [life.mdostal.com](https://life.mdostal.com)
+- **What we're building at Firefly Events** — event discovery, 8,000+ events/day from 7+ sources → [ff.events](https://ff.events)
+
+Always up for a conversation if any of it's useful to you.
+<!-- /shared:support -->
