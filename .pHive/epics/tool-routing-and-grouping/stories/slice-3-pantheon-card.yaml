@@ -1,0 +1,106 @@
+id: slice-3-pantheon-card
+epic: tool-routing-and-grouping
+title: Ship the Pantheon featured card (portunus, its only public member today)
+status: pending
+complexity: medium
+methodology: bdd
+depends_on: [slice-2-grouping-component]
+
+description: |
+  FrameworkCard currently always renders OpenAndSourceLinks, which assumes the
+  card represents one deployed thing with a meaningful originUrl/repoUrl. A
+  pure family/grouping card (Pantheon) has neither -- it isn't itself deployed
+  anywhere. Add a family-only render path to FrameworkCard that skips
+  OpenAndSourceLinks when the tool has components but no meaningful deployed
+  identity of its own, then create one real Sanity tool doc for "Pantheon"
+  with components: [{label: "Portunus", href: "/portunus"}] -- its only
+  public family member today (heimdall, mnemosyne, minerva, and others are
+  private repos as of this epic's planning; each gets added as a components[]
+  entry, zero code change, the moment its repo goes public).
+
+  Full design context: .pHive/epics/tool-routing-and-grouping/docs/design-discussion.md
+  §3 part B item 1, §6 open question 2 (resolved: ship now with just portunus).
+
+acceptance_criteria:
+  - "Given the Pantheon tool doc (components: [{label: \"Portunus\", href: \"/portunus\"}], no meaningful originUrl/repoUrl), when its FrameworkCard renders, then it shows the family-only layout -- title, description, the one \"Portunus\" chip linking to /portunus -- with no Open/Download/Source button row rendered."
+  - "Given the existing drone-hub FrameworkCard (real components AND a real deployed app), when it renders, then its layout and OpenAndSourceLinks row are unchanged from before this story -- the family-only path must not affect a framework card that legitimately has both a component list and a deployment."
+  - "Given the Pantheon card, when the \"Portunus\" chip is clicked, then it navigates to /portunus, which (per slice 1) resolves to portunus's real GitHub Pages content."
+  - "Given the Pantheon card is placed within the grouping structure from slice 2, when the page renders, then it appears in a sensible section (Live, matching that Portunus itself is a real current working part of the family) without breaking that section's other cards."
+
+steps:
+  - id: research
+    description: >
+      Re-read FrameworkCard's current implementation (src/app/page.tsx) and
+      confirm exactly what makes a tool doc "family-only" vs. a real deployed
+      framework -- likely: components is set AND (originUrl is empty/missing
+      OR live is false AND pagesUrl is empty), but verify against the actual
+      Pantheon doc's real field values once drafted, not just in the abstract.
+    agent: researcher
+  - id: behavior-spec
+    description: >
+      Write Given/When/Then scenarios for all 4 acceptance criteria, using the
+      real drone-hub doc as the "framework card with deployment" fixture and a
+      drafted Pantheon doc shape as the "family-only" fixture.
+    agent: tester
+    depends_on: [research]
+  - id: implement
+    description: >
+      Add the family-only conditional render path to FrameworkCard in
+      src/app/page.tsx. Create the Pantheon Sanity tool doc via the same
+      write-client pattern used by scripts/crawl-github-repos.mjs and
+      scripts/migrate-tools-to-sanity.mjs (process.env-only credentials,
+      never hardcoded) -- either as a one-off script run or documented manual
+      Studio steps; either is acceptable, note the actual approach taken in
+      the step summary.
+    agent: developer
+    depends_on: [behavior-spec]
+  - id: test
+    description: >
+      Manual verification: pnpm build + pnpm start locally with real Sanity
+      env vars, confirm the Pantheon card renders correctly with no button
+      row, confirm the Portunus chip navigates correctly, confirm drone-hub's
+      FrameworkCard is pixel/markup-identical to before this story (regression
+      check -- this is the highest-risk part of this story, since both cards
+      share the same component).
+    agent: tester
+    depends_on: [implement]
+  - id: review
+    description: >
+      Review against acceptance criteria, with particular attention to AC2
+      (drone-hub unaffected) since that's the part most likely to regress
+      silently if the family-only conditional is too broad.
+    agent: reviewer
+    depends_on: [test]
+  - id: integrate
+    description: Commit and push to feat/tool-routing-and-grouping.
+    agent: developer
+    depends_on: [review]
+
+context:
+  codebase: /Users/mdostal/Documents/work/personal/mdostal-tools-hub
+  key_files:
+    - path: src/app/page.tsx
+      purpose: FrameworkCard is the component this story modifies; drone-hub's real usage is the regression-risk case.
+    - path: scripts/migrate-tools-to-sanity.mjs
+      purpose: Precedent for writing a hand-curated Sanity tool doc via a script.
+
+files_to_modify:
+  - file: src/app/page.tsx
+    change: FrameworkCard gains a family-only conditional render path (no OpenAndSourceLinks row).
+
+design_decisions:
+  - decision: Ship the Pantheon card now with just one member (Portunus), not wait for a second.
+    rationale: User's explicit answer at the design-discussion review gate, overriding the design draft's own "wait for a second member" recommendation.
+  - decision: Family-only detection is a property of the tool doc's data shape (no meaningful deployment), not a new explicit boolean field.
+    rationale: Keeps the schema additive-free for this story -- reuses existing fields (components, originUrl, live, pagesUrl) rather than introducing a new one, matching this codebase's reuse-before-invent precedent.
+
+risks:
+  - severity: medium
+    description: The family-only conditional in FrameworkCard could be too broad and accidentally suppress the button row for drone-hub or a future legitimate framework-with-deployment card.
+    mitigation: AC2 exists specifically to gate this; review step explicitly re-verifies drone-hub is unaffected before this story can pass.
+
+references:
+  - path: .pHive/epics/tool-routing-and-grouping/docs/design-discussion.md
+    relevant_excerpt: |
+      §3 part B item 1 (Pantheon-as-FrameworkCard pattern, components[] reuse),
+      §6 open question 2 (resolved at review gate: ship now, just portunus).

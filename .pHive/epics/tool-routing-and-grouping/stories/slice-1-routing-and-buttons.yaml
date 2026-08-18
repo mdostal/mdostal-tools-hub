@@ -1,0 +1,130 @@
+id: slice-1-routing-and-buttons
+epic: tool-routing-and-grouping
+title: Forward non-live tools with a GitHub Pages site to that site, with tiered button wording
+status: pending
+complexity: medium
+methodology: bdd
+depends_on: []
+
+description: |
+  Add a second-tier rewrite to next.config.ts: when a tool isn't live but has
+  pagesUrl set, forward tools.mdostal.com/<mount> to that GitHub Pages site.
+  Update OpenAndSourceLinks (src/app/page.tsx) to a three-state primary button:
+  live -> "Open ->" (unchanged), non-live-with-pagesUrl -> "View ->" (new),
+  neither -> "Download latest release" (unchanged, now the third tier not the
+  second). Full design context and the two grill-caught bugs this must avoid:
+  .pHive/epics/tool-routing-and-grouping/docs/design-discussion.md §3 part A,
+  §4 (mixed-case asset-path risk, trailing-slash normalization).
+
+acceptance_criteria:
+  - "Given a tool has live: false and pagesUrl set (coin-finder, gigradar, rolodex today), when the site is built and a user visits /<mount>, then the response is the tool's real GitHub Pages content, not a 404 and not the old download-release page."
+  - "Given a tool has live: false and pagesUrl set, when its card renders, then the primary button reads \"View →\" (not \"Open →\", not \"Download latest release\") and links to /<mount>."
+  - "Given a tool has live: true, when its card renders and it routes, then behavior is byte-identical to before this story (regression check) -- button still reads \"Open →\", routing still uses the existing originUrl-based rewrite tier."
+  - "Given a tool has neither live: true nor pagesUrl set, when its card renders, then the primary button still reads \"Download latest release ↓\" and links to {repoUrl}/releases/latest, unchanged from before this story."
+  - "Given a stored pagesUrl value that does NOT end in a trailing slash, when the rewrite destination is built, then the computed URL still has exactly one slash between the path and any appended :path* segment (no missing-slash, no double-slash)."
+  - "Given a tool's GitHub repo name has mixed case (e.g. iosDiceRoller) and its pagesUrl is set, when the rewrite table is built, then it includes a rewrite entry keyed on the Pages URL's own real-case path segment (e.g. /iosDiceRoller/:path*), not only the lowercased mount, so the proxied page's own case-sensitive asset paths resolve correctly. None of the three mixed-case repos (ClusterExample, ReactSample, iosDiceRoller) are unhidden yet, so this can't be verified end-to-end against a live example -- verify the rewrite-table logic produces the correct entry given a synthetic mixed-case pagesUrl input."
+
+steps:
+  - id: research
+    description: >
+      Re-confirm scripts/crawl-github-repos.mjs's slugify() still lowercases
+      repo names (the exact grill finding this story exists to fix), and
+      re-confirm current live Sanity data for pagesUrl formatting (do all
+      values still end in "/"?) before implementing the normalization.
+    agent: researcher
+  - id: behavior-spec
+    description: >
+      Write Given/When/Then scenarios covering all 6 acceptance criteria above,
+      including concrete fixture data: the 3 real pagesUrl-fallback tools
+      (coin-finder, gigradar, rolodex, all lowercase, all with real pagesUrl
+      values), a synthetic mixed-case example (iosDiceRoller-shaped), and a
+      synthetic no-trailing-slash pagesUrl example.
+    agent: tester
+    depends_on: [research]
+  - id: implement
+    description: >
+      Implement next.config.ts's pagesUrl-fallback rewrite tier (3-entry
+      pattern per design-discussion.md §3 part A) and OpenAndSourceLinks'
+      three-state button logic in src/app/page.tsx. Do NOT touch the live-tier
+      rewrite logic or the live-tier button branch -- both must stay
+      byte-identical (AC3).
+    agent: developer
+    depends_on: [behavior-spec]
+  - id: test
+    description: >
+      No test framework exists in this repo. Verify manually: pnpm build +
+      pnpm start locally with real Sanity env vars, confirm /coin-finder,
+      /gigradar, /rolodex resolve to real content (not 404, not download
+      page); confirm the 4 live tools' routing and button text are unchanged
+      (diff against pre-change behavior); confirm a tool with neither live nor
+      pagesUrl still shows the download button. For the mixed-case and
+      trailing-slash cases (AC5, AC6), verify the rewrite-table-building logic
+      directly (e.g. a quick synthetic-input check), since no real mixed-case
+      tool is unhidden to test end-to-end.
+    agent: tester
+    depends_on: [implement]
+  - id: review
+    description: >
+      Review against design-discussion.md §3-4 and this story's acceptance
+      criteria, with particular attention to the two grill-caught bugs (mixed
+      case, trailing slash) actually being fixed, not just documented as
+      "will fix later." Confirm the multi-zone-routing-safety cross-cutting
+      concern: existing live:true tools' rewrite/button behavior is untouched.
+    agent: reviewer
+    depends_on: [test]
+  - id: integrate
+    description: Commit and push to feat/tool-routing-and-grouping.
+    agent: developer
+    depends_on: [review]
+
+context:
+  codebase: /Users/mdostal/Documents/work/personal/mdostal-tools-hub
+  key_files:
+    - path: next.config.ts
+      purpose: Owns the rewrites() function this story extends with a second tier.
+    - path: src/app/page.tsx
+      purpose: OpenAndSourceLinks needs the third button state.
+    - path: scripts/crawl-github-repos.mjs
+      purpose: Source of the slugify()-lowercases-mount fact this story's fix depends on understanding correctly.
+
+files_to_modify:
+  - file: next.config.ts
+    change: Add pagesUrl-fallback rewrite tier (3 entries per tool, normalized pagesBase, case-preserving third entry).
+  - file: src/app/page.tsx
+    change: OpenAndSourceLinks gets a three-state button (Open / View / Download).
+
+code_examples:
+  - title: Existing live-tier rewrite pattern to mirror the shape of (not the exact destination logic)
+    file: next.config.ts
+    snippet: |
+      return tools.filter((t) => t.live).flatMap((tool) => [
+        { source: `/${tool.mount}`, destination: `${tool.originUrl}/${tool.mount}` },
+        { source: `/${tool.mount}/:path*`, destination: `${tool.originUrl}/${tool.mount}/:path*` },
+      ]);
+
+design_decisions:
+  - decision: pagesUrl-fallback destination normalizes trailing slash rather than trusting the stored string.
+    rationale: Grill H2 -- pagesUrl is a plain Sanity url field with no format validation; a future hand-entered value without a trailing slash would silently produce a garbage proxy destination.
+  - decision: A third rewrite entry keyed on the Pages URL's real-case path segment, alongside the lowercased-mount entries.
+    rationale: Grill H1 -- mount is always slugify(repo.name).toLowerCase(), GitHub Pages URLs preserve real case; without this, mixed-case repos would have silently broken asset loading the moment they're unhidden.
+  - decision: "View →" as the distinct wording for non-live-with-pagesUrl, not reusing "Open →".
+    rationale: User's explicit answer at the design-discussion review gate -- non-live tools need distinguishable wording from the actual live/deployed state, not the same label.
+
+risks:
+  - severity: low
+    description: A GitHub Pages site's own redirect or custom 404 behavior might not proxy cleanly.
+    mitigation: Same category of risk already accepted for Vercel-deployment proxying in the existing live tier; not new to this change.
+
+cross_cutting:
+  - concern: documentation
+    action: Update .pHive/CONTEXT.md's "live vs. preview-only" entry to describe the new View-tier and its routing.
+
+references:
+  - path: .pHive/epics/tool-routing-and-grouping/docs/design-discussion.md
+    relevant_excerpt: |
+      §3 part A (exact rewrite pseudocode + both grill fixes), §4 (risk list),
+      §6 open questions 3-4 (button wording resolved: three-state, "View →").
+  - path: .pHive/epics/tool-routing-and-grouping/docs/grill-record.md
+    relevant_excerpt: |
+      H1 (mixed-case asset path risk), H2 (trailing-slash normalization) --
+      both must be genuinely fixed by this story, not just documented.
