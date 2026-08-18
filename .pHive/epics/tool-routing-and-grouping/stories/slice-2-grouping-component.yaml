@@ -1,0 +1,106 @@
+id: slice-2-grouping-component
+epic: tool-routing-and-grouping
+title: Build a reusable grouped-sections component; use it for Live/Preview
+status: pending
+complexity: medium
+methodology: bdd
+depends_on: [slice-1-routing-and-buttons]
+
+description: |
+  Replace the single flat tool grid in src/app/page.tsx with a real, reusable
+  component that renders an ordered list of labeled groups, each containing
+  tool cards rendered via the existing ToolCard/FrameworkCard logic
+  (unchanged). First real usage: two groups computed from tool.live -- "Live"
+  and "Preview". This is infrastructure for future groups (e.g. a Pantheon
+  section in slice 3, or others later), not a one-off two-section hardcode.
+  Full design context: .pHive/epics/tool-routing-and-grouping/docs/{design-discussion,horizontal-plan,vertical-plan}.md.
+
+  Explicitly out of scope for this story: collapse/expand interactivity,
+  animation, client-side toggle state. Labeled static sections only -- see
+  horizontal-plan.md layer 3's "explicitly not building" note for the
+  reasoning (would require a client-component boundary, a bigger and separate
+  architectural question not warranted by "keep it navigable" alone).
+
+acceptance_criteria:
+  - "Given the current 9 tools (4 live, 5 preview), when the landing page renders, then tools appear under two labeled headings, \"Live\" and \"Preview\", each containing exactly the tools with that live status, in the same relative order as before this story."
+  - "Given a tool renders as a ToolCard or FrameworkCard, when it renders inside a group, then its card markup/styling is unchanged from before this story -- this story changes grouping/layout only, not individual card rendering."
+  - "Given zero tools exist in a group (e.g. hypothetically zero live tools), when the page renders, then that group's heading does not render at all -- no empty section with a heading and nothing under it."
+  - "Given the new component, when read by another developer, then it accepts an ordered array of {title, tools} groups as a prop/argument, not a hardcoded Live/Preview split baked into the component itself -- the Live/Preview computation happens in the caller (page.tsx), the component only renders whatever groups it's given."
+
+steps:
+  - id: research
+    description: >
+      Re-read src/app/page.tsx's current single-grid rendering (the
+      `TOOLS.map(...)` block) and the ToolCard/FrameworkCard component
+      signatures to confirm they can be reused unchanged inside a new grouping
+      wrapper with no prop changes needed.
+    agent: researcher
+  - id: behavior-spec
+    description: >
+      Write Given/When/Then scenarios for all 4 acceptance criteria using the
+      real current 9-tool dataset (4 live, 5 preview) as the concrete fixture,
+      plus a synthetic zero-tools-in-a-group case.
+    agent: tester
+    depends_on: [research]
+  - id: implement
+    description: >
+      Create the grouping component (naming/file location is the developer's
+      call -- e.g. src/app/GroupedToolSections.tsx -- note the actual choice
+      in the step summary) and wire src/app/page.tsx's tool-rendering section
+      to compute the two live/preview groups and pass them to it.
+    agent: developer
+    depends_on: [behavior-spec]
+  - id: test
+    description: >
+      Manual verification: pnpm build + pnpm start locally, confirm all 9
+      current tools render under the correct heading with unchanged card
+      content/styling/routing (slice 1's routing/button work must still be
+      intact); confirm heading order is Live then Preview; confirm no visual
+      regression on card content itself (screenshot-level comparison against
+      pre-change if convenient, or careful manual review).
+    agent: tester
+    depends_on: [implement]
+  - id: review
+    description: >
+      Review against acceptance criteria, in particular AC4 (component takes
+      groups as data, doesn't hardcode Live/Preview internally) -- this is
+      the property that makes slice 3's Pantheon section addition, and any
+      future group, a caller-side data change rather than a component change.
+    agent: reviewer
+    depends_on: [test]
+  - id: integrate
+    description: Commit and push to feat/tool-routing-and-grouping.
+    agent: developer
+    depends_on: [review]
+
+context:
+  codebase: /Users/mdostal/Documents/work/personal/mdostal-tools-hub
+  key_files:
+    - path: src/app/page.tsx
+      purpose: Contains the flat grid this story replaces, and the ToolCard/FrameworkCard components this story must reuse unchanged.
+
+files_to_modify:
+  - file: src/app/page.tsx
+    change: Extract grouping logic; compute Live/Preview groups; render via the new component.
+  - file: src/app/GroupedToolSections.tsx
+    change: "New file (exact name at developer's discretion) -- the reusable grouped-sections component."
+
+design_decisions:
+  - decision: Build a real reusable groups component now rather than hardcode two <section> blocks.
+    rationale: User's explicit answer at the design-discussion review gate -- "build the tools and components for the nesting and collapsible and other sections... keep it the live/preview split now, but build the tools, get it going." Groups-as-data is what makes future sections (Pantheon in slice 3, others later) additive.
+  - decision: No collapse/expand interactivity in this story.
+    rationale: Static labeled sections address the "hard to scroll through" concern already; interactivity is additive polish that doesn't require redesigning the data shape, and would need a client-component boundary this server-rendered page doesn't have today -- a separate, bigger decision not implied by the request.
+
+cross_cutting:
+  - concern: documentation
+    action: Add the new component's existence and its {title, tools}[] contract to .pHive/CONTEXT.md's Key paths section.
+
+references:
+  - path: .pHive/epics/tool-routing-and-grouping/docs/horizontal-plan.md
+    relevant_excerpt: |
+      Layer 3: the grouping component's contract and explicit non-goals
+      (no collapse/expand, no client boundary) for this story.
+  - path: .pHive/epics/tool-routing-and-grouping/docs/vertical-plan.md
+    relevant_excerpt: |
+      Slice 2: "every tool still renders exactly as before... purely an
+      information-architecture change" -- the working-state bar this story must clear.

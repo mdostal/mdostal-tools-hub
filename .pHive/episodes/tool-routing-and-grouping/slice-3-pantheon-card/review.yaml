@@ -1,0 +1,5 @@
+step_id: review
+status: completed
+timestamp: "2026-08-18T19:30:00Z"
+artifacts: []
+notes: "Verdict: passed. All 4 ACs mapped to file:line evidence. One doc nit: story spec guessed Pantheon would land in the Live section; the family-only condition (!live) structurally always places it in Preview, which is correct given the design -- story wording was imprecise, not the code."

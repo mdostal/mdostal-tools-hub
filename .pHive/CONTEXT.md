@@ -11,14 +11,52 @@ each one's mount path to its own independently-deployed Vercel project.
   `pagesUrl` (GitHub Pages site), and a `live` flag.
 - **Framework card** — a tool entry with a `components[]` list (e.g. Drone
   Components/drone-hub), rendered as a wider "featured" card instead of the
-  standard single-purpose tool card. See `src/app/page.tsx`.
+  standard single-purpose tool card. See `src/app/GroupedToolSections.tsx`.
+- **Family-only card (Pantheon pattern)** — a `FrameworkCard` whose tool has
+  `components[]` set but no deployed identity of its own: `!tool.live &&
+  !tool.pagesUrl && !tool.originUrl`. Renders title/description/chips
+  exactly like any other `FrameworkCard`, but skips `OpenAndSourceLinks`
+  entirely (no Open/View/Download button, no Site page link, no Source
+  link — there's nothing real to point those at, and no `repoUrl` either
+  since it isn't one repo). Live example: the "Pantheon" doc (`_id:
+  "tool-pantheon"`, `mount: "pantheon"`, `sortOrder: 7`), the umbrella over
+  this hub's shared agent-layer components, today with one chip
+  (`{ label: "Portunus", href: "/portunus" }`). **Adding the next Pantheon
+  member once it goes public is a Studio-only move — zero code:** open the
+  `tool-pantheon` doc, add another `{ label, href: "/<its-mount>" }` entry
+  to `components[]`, publish. (Whether `/<its-mount>` itself resolves to
+  anything is separate — that tool needs its own `live`/`pagesUrl` routing
+  sorted out first, same as any other tool.) drone-hub is the converse
+  fixture proving this didn't regress: it has `live`, `pagesUrl`, AND
+  `originUrl` all set, so it never hits the family-only branch and keeps
+  its full button row. See `.pHive/epics/tool-routing-and-grouping/docs/
+  behavior-specs-slice-3.md` for the full spec.
 - **Multi-zone routing** — Vercel's pattern (see README) for proxying a subpath
   to a completely independent Vercel deployment. Each tool's own `next.config.ts`
   sets `basePath` matching its `mount`; this hub's `next.config.ts` generates the
   `rewrites()` rules from `getTools()`.
 - **live vs. preview-only** — `live: true` means the tool's `basePath` support is
-  verified working end-to-end and gets a real rewrite + "Open" button. `live: false`
-  shows a "Preview only" badge and falls back to linking the GitHub releases page.
+  verified working end-to-end and gets a real rewrite + "Open →" button proxying
+  `/<mount>` to `originUrl`. `live: false` always shows a "Preview only" badge
+  (`LiveBadge`, keyed only on `tool.live`, unaffected by which button state
+  below applies), and its primary button is a two-way fallback:
+    - **`pagesUrl` set** (the tool has a real GitHub Pages site, just not its
+      own live deployment) — "View →" button, also linking `/<mount>`, proxied
+      by `next.config.ts`'s second rewrite tier straight to `pagesUrl` instead
+      of `originUrl`. That tier normalizes `pagesUrl`'s trailing slash (stored
+      formatting isn't schema-enforced) and additionally registers a rewrite
+      keyed on the Pages URL's own real-case path segment (`new
+      URL(pagesUrl).pathname`), not just the lowercased `mount` --
+      `scripts/crawl-github-repos.mjs`'s `slugify()` always lowercases, but
+      GitHub Pages preserves exact repo-name case, so a mixed-case repo (e.g.
+      a future `iosDiceRoller`) needs that real-case entry or its own proxied
+      page's asset requests 404. The two tiers are mutually exclusive by
+      construction (`live` vs. `!live && pagesUrl`) -- a tool is never routed
+      by both.
+    - **no `pagesUrl`** (nothing deployed anywhere) — "Download latest
+      release ↓", linking `${repoUrl}/releases/latest`, the true fallback.
+  See `.pHive/epics/tool-routing-and-grouping/docs/design-discussion.md` §3
+  part A for the full rewrite pseudocode and reasoning.
 - **GitHub crawler** — `scripts/crawl-github-repos.mjs`, which scans all public repos
   under the `mdostal` GitHub account, pulls README + metadata, and proposes new
   Sanity tool entries for human approval (suggest-then-approve, never auto-publish).
@@ -49,7 +87,33 @@ each one's mount path to its own independently-deployed Vercel project.
   env var).
 - `next.config.ts` — multi-zone rewrite rules, generated from `getTools()` at
   build time.
-- `src/app/page.tsx` — the landing page: tool grid, `LiveBadge`, `OpenAndSourceLinks`.
+- `src/app/page.tsx` — the landing page. `Home` fetches `getTools()`, computes
+  two ordered groups by partitioning on `tool.live` (`"Live"`, then
+  `"Preview"`, each preserving `TOOLS`'s existing Sanity-`sortOrder` relative
+  order -- not re-sorted), and renders them via `GroupedToolSections`.
+- `src/app/GroupedToolSections.tsx` — reusable grouping/section component
+  (added for the Live/Preview split, horizontal-plan.md layer 3). Contract:
+  accepts a single prop, an ordered `{ title: string, tools: ToolEntry[] }[]`
+  array -- the component itself has no notion of "Live"/"Preview" or any
+  other grouping scheme; that partition is entirely the caller's decision
+  (`src/app/page.tsx`'s `Home`). For each group with at least one tool, it
+  renders a labeled `<h2>` heading (same typographic scale as the page's
+  other section headings, e.g. the "Support" heading) followed by the
+  existing 2-column grid (`grid grid-cols-1 gap-5 sm:grid-cols-2`), mapping
+  each tool through the same unchanged `tool.components ? <FrameworkCard
+  .../> : <ToolCard .../>` branch (moved here from `page.tsx`, not
+  duplicated). A group with zero tools renders nothing at all for that group
+  -- no heading, no empty grid. Also owns `LiveBadge` and
+  `OpenAndSourceLinks` (moved here alongside `ToolCard`/`FrameworkCard`,
+  since only those two cards use them). Adding a future third section (e.g.
+  "Archived") is a data change in `page.tsx`'s `Home`, not a code change
+  here. Deliberately static/server-rendered only -- no collapse/expand,
+  animation, or client-side state (see horizontal-plan.md layer 3's
+  explicit non-goals). See
+  `.pHive/epics/tool-routing-and-grouping/docs/behavior-specs-slice-2.md`
+  for the full Given/When/Then spec this was built against.
+  `FrameworkCard` also implements the "family-only card (Pantheon pattern)"
+  glossary entry above — see behavior-specs-slice-3.md.
 - `scripts/migrate-tools-to-sanity.mjs` — one-time/idempotent bootstrap script that
   seeds Sanity tool docs via `createOrReplace` on a fixed, hand-maintained list keyed
   by `tool-<mount>`. Structural precedent (ESM script, `@sanity/client`, env-var-only

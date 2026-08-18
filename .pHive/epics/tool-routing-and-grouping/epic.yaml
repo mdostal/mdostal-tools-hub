@@ -1,0 +1,42 @@
+name: tool-routing-and-grouping
+title: GitHub Pages Fallback Routing + Tool Grouping UI
+description: >
+  Forward non-live tools with a GitHub Pages site to that site instead of
+  only offering a release-download link, and give the landing page a real
+  reusable grouped-sections layout (starting with Live/Preview, plus a
+  Pantheon featured card) so it stays navigable as more tools come online.
+target_codebase: /Users/mdostal/Documents/work/personal/mdostal-tools-hub
+methodology: bdd
+version_bump: none
+sidecar_retention: committed
+
+git_flow:
+  base_branch: main
+  branch_strategy: per-epic
+
+planning_team:
+  matched_tags: [architecture, ui, data]
+  roster: [researcher, technical-writer, tpm, architect, ui-designer]
+  per_tag_reasoning:
+    architecture: "New routing fallback tier + a new reusable component are structural additions to the app, not changes within one existing layer."
+    ui: "New landing-page grouping/sectioning component and a modified FrameworkCard render path are direct UI work."
+    data: "Reuses existing schema fields (live, pagesUrl, components) rather than introducing new ones -- no Sanity schema change this epic, unlike the earlier icon field addition."
+  confidence: matched
+  gate_decisions:
+    architecture: included
+    ui: included
+    data: included
+
+stories:
+  - id: slice-1-routing-and-buttons
+    title: Forward non-live tools with a GitHub Pages site to that site, with tiered button wording
+    complexity: medium
+    depends_on: []
+  - id: slice-2-grouping-component
+    title: Build a reusable grouped-sections component; use it for Live/Preview
+    complexity: medium
+    depends_on: [slice-1-routing-and-buttons]
+  - id: slice-3-pantheon-card
+    title: Ship the Pantheon featured card (portunus, its only public member today)
+    complexity: medium
+    depends_on: [slice-2-grouping-component]
