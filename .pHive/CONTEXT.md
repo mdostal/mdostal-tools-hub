@@ -17,8 +17,27 @@ each one's mount path to its own independently-deployed Vercel project.
   sets `basePath` matching its `mount`; this hub's `next.config.ts` generates the
   `rewrites()` rules from `getTools()`.
 - **live vs. preview-only** — `live: true` means the tool's `basePath` support is
-  verified working end-to-end and gets a real rewrite + "Open" button. `live: false`
-  shows a "Preview only" badge and falls back to linking the GitHub releases page.
+  verified working end-to-end and gets a real rewrite + "Open →" button proxying
+  `/<mount>` to `originUrl`. `live: false` always shows a "Preview only" badge
+  (`LiveBadge`, keyed only on `tool.live`, unaffected by which button state
+  below applies), and its primary button is a two-way fallback:
+    - **`pagesUrl` set** (the tool has a real GitHub Pages site, just not its
+      own live deployment) — "View →" button, also linking `/<mount>`, proxied
+      by `next.config.ts`'s second rewrite tier straight to `pagesUrl` instead
+      of `originUrl`. That tier normalizes `pagesUrl`'s trailing slash (stored
+      formatting isn't schema-enforced) and additionally registers a rewrite
+      keyed on the Pages URL's own real-case path segment (`new
+      URL(pagesUrl).pathname`), not just the lowercased `mount` --
+      `scripts/crawl-github-repos.mjs`'s `slugify()` always lowercases, but
+      GitHub Pages preserves exact repo-name case, so a mixed-case repo (e.g.
+      a future `iosDiceRoller`) needs that real-case entry or its own proxied
+      page's asset requests 404. The two tiers are mutually exclusive by
+      construction (`live` vs. `!live && pagesUrl`) -- a tool is never routed
+      by both.
+    - **no `pagesUrl`** (nothing deployed anywhere) — "Download latest
+      release ↓", linking `${repoUrl}/releases/latest`, the true fallback.
+  See `.pHive/epics/tool-routing-and-grouping/docs/design-discussion.md` §3
+  part A for the full rewrite pseudocode and reasoning.
 - **GitHub crawler** — `scripts/crawl-github-repos.mjs`, which scans all public repos
   under the `mdostal` GitHub account, pulls README + metadata, and proposes new
   Sanity tool entries for human approval (suggest-then-approve, never auto-publish).

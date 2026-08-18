@@ -42,11 +42,25 @@ function LiveBadge({ live }: { live: boolean }) {
   );
 }
 
-/** Every tool gets up to three links, in this order: the running app (or,
- *  if nothing is actually deployed anywhere, a fallback to the newest
- *  GitHub release so there's still SOMETHING to grab); the tool's own
- *  GitHub Pages site, if it has one (tool.pagesUrl); and the source repo,
- *  always. */
+/** Every tool gets up to three links, in this order: a primary "get to the
+ *  thing" button, then the tool's own GitHub Pages site if it has one
+ *  (tool.pagesUrl), then the source repo, always.
+ *
+ *  The primary button is a three-state check, in priority order:
+ *   1. tool.live -- "Open →" to /<mount>, proxied to the tool's own Vercel
+ *      deployment via next.config.ts's live-tier rewrite. Unchanged by the
+ *      pagesUrl-fallback tier below.
+ *   2. !tool.live && tool.pagesUrl -- "View →" to /<mount>, proxied instead
+ *      to the tool's real GitHub Pages site via next.config.ts's second
+ *      rewrite tier (see that file's own comment + design-discussion.md §3
+ *      part A). Not deployed as this hub's own app, but there IS something
+ *      real to click through to, so it gets the same primary bg-accent
+ *      button as "Open →" -- just different copy so it doesn't overclaim
+ *      "live". The "Preview only" badge (LiveBadge) still renders alongside
+ *      it regardless -- that badge is about deployment status, this button
+ *      is about whether there's anywhere to click through to.
+ *   3. neither -- "Download latest release ↓", the true fallback for a tool
+ *      with nowhere live to send a visitor at all. */
 function OpenAndSourceLinks({ tool }: { tool: ToolEntry }) {
   return (
     <div className="flex flex-wrap items-center gap-4">
@@ -56,6 +70,13 @@ function OpenAndSourceLinks({ tool }: { tool: ToolEntry }) {
           className="inline-flex h-10 items-center justify-center rounded-lg bg-accent px-4 text-sm font-semibold text-black transition-opacity hover:opacity-90"
         >
           Open →
+        </a>
+      ) : tool.pagesUrl ? (
+        <a
+          href={`/${tool.mount}`}
+          className="inline-flex h-10 items-center justify-center rounded-lg bg-accent px-4 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+        >
+          View →
         </a>
       ) : (
         <a

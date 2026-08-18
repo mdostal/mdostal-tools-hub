@@ -1,0 +1,5 @@
+step_id: test
+status: completed
+timestamp: "2026-08-18T18:20:00Z"
+artifacts: []
+notes: "Round 2: bugs fixed (pagesPath now derived from normalized pagesBase; bare-domain case skips the third rewrite entry). Note: Next.js 16.2.12 has an internal path-normalizer workaround that papered over the original crash in this specific version -- developer confirmed the underlying defect was still real via a direct path-to-regexp call before fixing, rather than trusting the framework's masking. Fix verified against synthetic mixed-case, no-trailing-slash, and bare-domain inputs, plus real coin-finder/gigradar/rolodex. Lint clean, no stray test artifacts left."
