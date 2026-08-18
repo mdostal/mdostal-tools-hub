@@ -11,7 +11,26 @@ each one's mount path to its own independently-deployed Vercel project.
   `pagesUrl` (GitHub Pages site), and a `live` flag.
 - **Framework card** — a tool entry with a `components[]` list (e.g. Drone
   Components/drone-hub), rendered as a wider "featured" card instead of the
-  standard single-purpose tool card. See `src/app/page.tsx`.
+  standard single-purpose tool card. See `src/app/GroupedToolSections.tsx`.
+- **Family-only card (Pantheon pattern)** — a `FrameworkCard` whose tool has
+  `components[]` set but no deployed identity of its own: `!tool.live &&
+  !tool.pagesUrl && !tool.originUrl`. Renders title/description/chips
+  exactly like any other `FrameworkCard`, but skips `OpenAndSourceLinks`
+  entirely (no Open/View/Download button, no Site page link, no Source
+  link — there's nothing real to point those at, and no `repoUrl` either
+  since it isn't one repo). Live example: the "Pantheon" doc (`_id:
+  "tool-pantheon"`, `mount: "pantheon"`, `sortOrder: 7`), the umbrella over
+  this hub's shared agent-layer components, today with one chip
+  (`{ label: "Portunus", href: "/portunus" }`). **Adding the next Pantheon
+  member once it goes public is a Studio-only move — zero code:** open the
+  `tool-pantheon` doc, add another `{ label, href: "/<its-mount>" }` entry
+  to `components[]`, publish. (Whether `/<its-mount>` itself resolves to
+  anything is separate — that tool needs its own `live`/`pagesUrl` routing
+  sorted out first, same as any other tool.) drone-hub is the converse
+  fixture proving this didn't regress: it has `live`, `pagesUrl`, AND
+  `originUrl` all set, so it never hits the family-only branch and keeps
+  its full button row. See `.pHive/epics/tool-routing-and-grouping/docs/
+  behavior-specs-slice-3.md` for the full spec.
 - **Multi-zone routing** — Vercel's pattern (see README) for proxying a subpath
   to a completely independent Vercel deployment. Each tool's own `next.config.ts`
   sets `basePath` matching its `mount`; this hub's `next.config.ts` generates the
@@ -93,6 +112,8 @@ each one's mount path to its own independently-deployed Vercel project.
   explicit non-goals). See
   `.pHive/epics/tool-routing-and-grouping/docs/behavior-specs-slice-2.md`
   for the full Given/When/Then spec this was built against.
+  `FrameworkCard` also implements the "family-only card (Pantheon pattern)"
+  glossary entry above — see behavior-specs-slice-3.md.
 - `scripts/migrate-tools-to-sanity.mjs` — one-time/idempotent bootstrap script that
   seeds Sanity tool docs via `createOrReplace` on a fixed, hand-maintained list keyed
   by `tool-<mount>`. Structural precedent (ESM script, `@sanity/client`, env-var-only

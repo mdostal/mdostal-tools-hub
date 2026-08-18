@@ -137,14 +137,27 @@ function ToolCard({ tool }: { tool: ToolEntry }) {
 }
 
 /** Featured, full-width card for a multi-component framework (currently
- *  just drone-hub) — the same screenshot/title/description/links as
- *  <ToolCard>, plus a row of real component chips (each a working link
- *  through this hub's own multi-zone rewrite to that component's live
- *  demo on the origin app), so a visitor sees "12 real, working things
- *  in here," not just one generic tool description like every other
- *  card. Rendered instead of <ToolCard> whenever `tool.components` is
- *  set — see lib/tools.ts's own field comment. */
+ *  drone-hub, plus family-only umbrellas like Pantheon) — the same
+ *  screenshot/title/description as <ToolCard>, plus a row of real
+ *  component chips (each a working link through this hub's own multi-zone
+ *  rewrite to that component's live demo, or to another top-level tool's
+ *  own mount for a family umbrella), so a visitor sees "N real, working
+ *  things in here," not just one generic tool description like every
+ *  other card. Rendered instead of <ToolCard> whenever `tool.components`
+ *  is set — see lib/tools.ts's own field comment.
+ *
+ *  "Family-only" tools (e.g. Pantheon): a components-bearing entry with no
+ *  deployed identity of its own -- `!tool.live && !tool.pagesUrl &&
+ *  !tool.originUrl`. There's nothing for OpenAndSourceLinks to meaningfully
+ *  point at (its fallback branch would build a broken/misleading "Download
+ *  latest release" link off an unset repoUrl), so it's skipped entirely for
+ *  that shape of tool -- title, description, and chips still render exactly
+ *  as normal. See .pHive/epics/tool-routing-and-grouping/docs/
+ *  behavior-specs-slice-3.md AC1/AC4 for the precise condition and its
+ *  boundary cases, and AC2 for why drone-hub (live + pagesUrl + originUrl
+ *  all set) never reaches this branch. */
 function FrameworkCard({ tool }: { tool: ToolEntry & { components: NonNullable<ToolEntry["components"]> } }) {
+  const isFamilyOnly = !tool.live && !tool.pagesUrl && !tool.originUrl;
   return (
     <div className="group col-span-full flex flex-col gap-6 overflow-hidden rounded-xl border border-accent/30 bg-surface transition-colors hover:border-accent/60 sm:flex-row">
       <div className="relative aspect-video w-full shrink-0 overflow-hidden border-b border-border bg-background sm:aspect-auto sm:w-72 sm:border-b-0 sm:border-r">
@@ -184,7 +197,7 @@ function FrameworkCard({ tool }: { tool: ToolEntry & { components: NonNullable<T
           </ul>
         </div>
 
-        <OpenAndSourceLinks tool={tool} />
+        {!isFamilyOnly && <OpenAndSourceLinks tool={tool} />}
       </div>
     </div>
   );
