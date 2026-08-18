@@ -1,0 +1,5 @@
+step_id: behavior-spec
+status: completed
+timestamp: "2026-08-18T18:40:00Z"
+artifacts:
+  - .pHive/epics/tool-routing-and-grouping/docs/behavior-specs-slice-2.md

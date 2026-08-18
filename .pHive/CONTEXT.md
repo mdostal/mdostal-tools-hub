@@ -68,7 +68,31 @@ each one's mount path to its own independently-deployed Vercel project.
   env var).
 - `next.config.ts` — multi-zone rewrite rules, generated from `getTools()` at
   build time.
-- `src/app/page.tsx` — the landing page: tool grid, `LiveBadge`, `OpenAndSourceLinks`.
+- `src/app/page.tsx` — the landing page. `Home` fetches `getTools()`, computes
+  two ordered groups by partitioning on `tool.live` (`"Live"`, then
+  `"Preview"`, each preserving `TOOLS`'s existing Sanity-`sortOrder` relative
+  order -- not re-sorted), and renders them via `GroupedToolSections`.
+- `src/app/GroupedToolSections.tsx` — reusable grouping/section component
+  (added for the Live/Preview split, horizontal-plan.md layer 3). Contract:
+  accepts a single prop, an ordered `{ title: string, tools: ToolEntry[] }[]`
+  array -- the component itself has no notion of "Live"/"Preview" or any
+  other grouping scheme; that partition is entirely the caller's decision
+  (`src/app/page.tsx`'s `Home`). For each group with at least one tool, it
+  renders a labeled `<h2>` heading (same typographic scale as the page's
+  other section headings, e.g. the "Support" heading) followed by the
+  existing 2-column grid (`grid grid-cols-1 gap-5 sm:grid-cols-2`), mapping
+  each tool through the same unchanged `tool.components ? <FrameworkCard
+  .../> : <ToolCard .../>` branch (moved here from `page.tsx`, not
+  duplicated). A group with zero tools renders nothing at all for that group
+  -- no heading, no empty grid. Also owns `LiveBadge` and
+  `OpenAndSourceLinks` (moved here alongside `ToolCard`/`FrameworkCard`,
+  since only those two cards use them). Adding a future third section (e.g.
+  "Archived") is a data change in `page.tsx`'s `Home`, not a code change
+  here. Deliberately static/server-rendered only -- no collapse/expand,
+  animation, or client-side state (see horizontal-plan.md layer 3's
+  explicit non-goals). See
+  `.pHive/epics/tool-routing-and-grouping/docs/behavior-specs-slice-2.md`
+  for the full Given/When/Then spec this was built against.
 - `scripts/migrate-tools-to-sanity.mjs` — one-time/idempotent bootstrap script that
   seeds Sanity tool docs via `createOrReplace` on a fixed, hand-maintained list keyed
   by `tool-<mount>`. Structural precedent (ESM script, `@sanity/client`, env-var-only
