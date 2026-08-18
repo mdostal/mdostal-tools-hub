@@ -118,33 +118,49 @@ async function fetchReadme(repoName) {
 }
 
 // README description-fallback heuristic: skip ATX headings, horizontal
-// rules, blank lines, pure badge/image lines, and list items, then take the
-// first real paragraph. Grounded against coin-finder's actual README shape:
+// rules, blank lines, pure badge/image lines, HTML comments, and list
+// items, then take the first real paragraph (stripping a leading blockquote
+// marker, if any). Grounded against coin-finder's actual README shape:
 //   # title -> blank -> --- -> blank -> ## Overview -> blank -> --- -> blank -> real paragraph
 // Also grounded against ClusterExample's README, which leads with a bulleted
 // setup list right after its heading -- list items are structural markdown,
 // not prose, and must be skipped the same as headings/rules/badges rather
 // than concatenated into a garbled "description".
+// Also grounded against cleanup-tools' README after scripts/readme-sync ran
+// on it: its README now opens with `<!-- shared:tagline -->` /
+// `> {tagline}` / `<!-- /shared:tagline -->` marker lines (see
+// scripts/readme-sync/README.md) -- a naive heuristic picked up the raw
+// HTML comment as "content" before this fix. Every repo this crawler scans
+// is a candidate for readme-sync adoption, so this isn't a one-off edge
+// case, it's a recurring shape.
 const ATX_HEADING = /^#{1,6}\s/;
 const HORIZONTAL_RULE = /^(-{3,}|\*{3,}|_{3,})$/;
 const BADGE_OR_IMAGE = /^!\[.*\]\(.*\)$/;
 const LIST_ITEM = /^(?:[-*+]\s|\d+\.\s)/;
+const HTML_COMMENT = /^<!--.*-->$/;
+const BLOCKQUOTE_PREFIX = /^>\s*/;
+
+function isStructuralLine(line) {
+  return (
+    ATX_HEADING.test(line) ||
+    HORIZONTAL_RULE.test(line) ||
+    BADGE_OR_IMAGE.test(line) ||
+    LIST_ITEM.test(line) ||
+    HTML_COMMENT.test(line)
+  );
+}
 
 function deriveDescriptionFromReadme(readme) {
   if (!readme) return null;
   const lines = readme.split("\n");
 
-  // Find the first line that isn't blank, an ATX heading, a horizontal
-  // rule, a pure badge/image line, or a list item -- that's the start of
-  // the first real paragraph.
+  // Find the first line that isn't blank or a structural markdown/HTML
+  // line -- that's the start of the first real paragraph.
   let start = -1;
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i].trim();
     if (line === "") continue;
-    if (ATX_HEADING.test(line)) continue;
-    if (HORIZONTAL_RULE.test(line)) continue;
-    if (BADGE_OR_IMAGE.test(line)) continue;
-    if (LIST_ITEM.test(line)) continue;
+    if (isStructuralLine(line)) continue;
     start = i;
     break;
   }
@@ -152,16 +168,18 @@ function deriveDescriptionFromReadme(readme) {
 
   // Markdown paragraphs can wrap across multiple non-blank lines -- collect
   // the rest of the paragraph until the next blank line, or until a list
-  // item starts (a list is a separate structural block, not a continuation
-  // of the preceding prose -- e.g. ClusterExample's "To run the
+  // item/HTML comment starts (those are separate structural blocks, not a
+  // continuation of the preceding prose -- e.g. ClusterExample's "To run the
   // application..." sentence is immediately followed by a bullet list on
-  // the very next line, with no blank line between them).
+  // the very next line, with no blank line between them; a readme-synced
+  // README's `> {tagline}` line is immediately followed by
+  // `<!-- /shared:tagline -->` the same way).
   const paragraphLines = [];
   for (let i = start; i < lines.length; i += 1) {
     const line = lines[i].trim();
     if (line === "") break;
-    if (i > start && LIST_ITEM.test(line)) break;
-    paragraphLines.push(line);
+    if (i > start && (LIST_ITEM.test(line) || HTML_COMMENT.test(line))) break;
+    paragraphLines.push(line.replace(BLOCKQUOTE_PREFIX, ""));
   }
   const paragraph = paragraphLines.join(" ");
   return paragraph.length > DESCRIPTION_MAX_LENGTH
