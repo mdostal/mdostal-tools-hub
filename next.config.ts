@@ -22,6 +22,35 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [{ protocol: "https", hostname: "cdn.sanity.io" }],
   },
+  // BUG FIX (2026-09-14, confirmed live): a pagesRewrites-tier tool's real
+  // GitHub Pages site is a plain static site with RELATIVE asset paths
+  // (e.g. `assets/hero-key.png`). Next.js `rewrites()` is an internal,
+  // server-side proxy -- it does NOT change the URL the browser shows or
+  // resolves relative paths against. Visiting `/portunus` (no trailing
+  // slash) served the real HTML fine, but the browser then resolved every
+  // relative asset against `https://tools.mdostal.com/` (treating
+  // `/portunus` as a FILE, not a directory) instead of
+  // `https://tools.mdostal.com/portunus/` -- every icon/asset 404'd even
+  // though the page itself "loaded". Confirmed live: the real Portunus
+  // landing page's hero image and favicons were all broken through this
+  // proxy for exactly this reason, with the page fetched directly from
+  // GitHub Pages (which always has real directory-style URLs) unaffected.
+  //
+  // Fix: `trailingSlash: true` makes Next's OWN canonical-URL redirect
+  // always send `/portunus` -> `/portunus/` for every route on this site,
+  // so the browser's address bar (and therefore every relative path in the
+  // fetched HTML) always ends up directory-style before the rewrite's
+  // response is resolved. A hand-rolled `redirects()` entry doing the same
+  // /mount -> /mount/ redirect was tried first and rejected: Next's default
+  // trailingSlash:false behavior ALSO auto-redirects any non-page path the
+  // other way (slash -> no-slash), and a custom redirect fighting that
+  // default on the exact same path pair is a real 308 redirect-loop risk,
+  // not just redundant. Setting the global option is the documented way to
+  // change which direction that canonicalization goes, with no competing
+  // rule left in place. Applies to every route on the site (its own native
+  // pages included), which is fine here -- the app has no page that itself
+  // depends on a no-slash URL.
+  trailingSlash: true,
   async rewrites() {
     const tools = await getTools();
     const liveRewrites = tools.filter((t) => t.live).flatMap((tool) => [
