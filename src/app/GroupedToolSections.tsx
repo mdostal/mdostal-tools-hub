@@ -27,6 +27,36 @@ function IconInline({ tool }: { tool: ToolEntry }) {
   );
 }
 
+/** The screenshot/preview area shared by ToolCard and FrameworkCard.
+ *  Renders the real screenshot when one exists; otherwise a graceful
+ *  icon-on-gradient placeholder instead of an empty <Image src=""> (which
+ *  Next.js renders as literally nothing -- confirmed live on every
+ *  Pantheon-family card, none of which have a screenshot uploaded to
+ *  Sanity yet). Always fills its parent's aspect-ratio box; parent is
+ *  responsible for that sizing (see callers). */
+function ToolPreview({ tool, alt }: { tool: ToolEntry; alt: string }) {
+  if (tool.screenshot) {
+    return (
+      <Image
+        src={tool.screenshot}
+        alt={alt}
+        fill
+        sizes="(min-width: 640px) 50vw, 100vw"
+        className="object-cover object-center transition-transform duration-300 group-hover:scale-[1.03]"
+      />
+    );
+  }
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-surface to-background">
+      {tool.icon ? (
+        <Image src={tool.icon} alt="" width={64} height={64} className="h-16 w-16 rounded-2xl object-cover opacity-90" />
+      ) : (
+        <span className="text-sm font-medium text-muted">Preview coming soon</span>
+      )}
+    </div>
+  );
+}
+
 function LiveBadge({ live }: { live: boolean }) {
   return live ? (
     <span className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-black/70 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
@@ -111,13 +141,7 @@ function ToolCard({ tool }: { tool: ToolEntry }) {
     <div className="group flex flex-col justify-between gap-6 overflow-hidden rounded-xl border border-border bg-surface transition-colors hover:border-accent/50">
       <div>
         <div className="relative aspect-video w-full overflow-hidden border-b border-border bg-background">
-          <Image
-            src={tool.screenshot}
-            alt={`Real ${tool.label} map output`}
-            fill
-            sizes="(min-width: 640px) 50vw, 100vw"
-            className="object-cover object-center transition-transform duration-300 group-hover:scale-[1.03]"
-          />
+          <ToolPreview tool={tool} alt={`Real ${tool.label} map output`} />
           <IconBadge tool={tool} />
           <LiveBadge live={tool.live} />
         </div>
@@ -161,13 +185,7 @@ function FrameworkCard({ tool }: { tool: ToolEntry & { components: NonNullable<T
   return (
     <div className="group col-span-full flex flex-col gap-6 overflow-hidden rounded-xl border border-accent/30 bg-surface transition-colors hover:border-accent/60 sm:flex-row">
       <div className="relative aspect-video w-full shrink-0 overflow-hidden border-b border-border bg-background sm:aspect-auto sm:w-72 sm:border-b-0 sm:border-r">
-        <Image
-          src={tool.screenshot}
-          alt={`${tool.label} component library`}
-          fill
-          sizes="(min-width: 640px) 288px, 100vw"
-          className="object-cover object-center transition-transform duration-300 group-hover:scale-[1.03]"
-        />
+        <ToolPreview tool={tool} alt={`${tool.label} component library`} />
         <IconBadge tool={tool} />
         <LiveBadge live={tool.live} />
       </div>

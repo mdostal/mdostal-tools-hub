@@ -50,10 +50,13 @@ export interface ToolEntry {
    * shows a "coming soon" state for anything still false, rather than
    * linking to a route that 404s. */
   live: boolean;
-  /** Path under /public to a real screenshot of the tool's own map output
-   * (captured from the live deployment, not a mockup) -- shown as the
-   * card's preview thumbnail. */
-  screenshot: string;
+  /** Path under /public (or a resolved Sanity CDN URL) to a real screenshot
+   * of the tool's own output (captured from the live deployment, not a
+   * mockup) -- shown as the card's preview thumbnail. Omitted for any tool
+   * that doesn't have one uploaded yet -- GroupedToolSections falls back to
+   * an icon-on-gradient placeholder rather than an empty <Image src="">,
+   * which Next.js renders as nothing at all. */
+  screenshot?: string;
   /** Optional small brand mark (logo, not a screenshot) -- resolved CDN URL.
    * Rendered as a badge over the screenshot's top-left corner and inline
    * next to the tool's name (see page.tsx's ToolCard/FrameworkCard). Omitted
@@ -140,8 +143,9 @@ function fromSanityDoc(doc: SanityToolDoc): ToolEntry {
     pagesUrl: doc.pagesUrl || undefined,
     live: Boolean(doc.live),
     // 1200px is comfortably wider than any card's rendered width (see
-    // sizes= on the <Image> in src/app/page.tsx) at 2x DPI.
-    screenshot: doc.screenshot ? sanityImageUrl(doc.screenshot, 1200) : "",
+    // sizes= on the <Image> in src/app/page.tsx) at 2x DPI. Omitted (not
+    // "") when unset in Sanity -- see the ToolEntry field comment.
+    screenshot: doc.screenshot ? sanityImageUrl(doc.screenshot, 1200) : undefined,
     // 96px comfortably covers both render sizes (a ~36px badge and a ~20px
     // inline mark) at 2x DPI, same "comfortably wider, not exact" approach
     // as screenshot above.
